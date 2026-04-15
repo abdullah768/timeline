@@ -5,718 +5,425 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Happy Anniversary!</title>
     <style>
-        /* Universal box-sizing for consistent layout */
-        *, *::before, *::after {
-            box-sizing: border-box;
-        }
-
-        /* General Styles */
         :root {
-            --primary-bg: #ffe45e; /* Yellow, used for buttons etc. */
-            --game-container-bg: #f7f7f7; /* Light grey for the app frame and body */
+            --primary-bg: #ffe45e;
+            --game-bg: #f7f7f7;
             --card-green: #90d8a5;
             --card-pink: #f4a5b4;
             --card-white: #ffffff;
             --text-dark: #333333;
-            --shadow-light: rgba(0, 0, 0, 0.1);
-            --shadow-medium: rgba(0, 0, 0, 0.2);
-            --border-radius-card: 15px;
-            --font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            --app-height: 100vh; /* Fallback height, will be set by JS */
+            --shadow: rgba(0, 0, 0, 0.1);
+            --app-height: 100vh;
         }
 
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
         body {
-            margin: 0;
-            padding: 0;
-            font-family: var(--font-family);
-            background-color: var(--game-container-bg); /* Matches app frame */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            height: var(--app-height); /* Use dynamic height for body as well */
-            overflow: hidden; /* Prevent body scroll */
-            user-select: none; /* Disable text selection */
-            -webkit-user-select: none; /* For iOS */
+            margin: 0; padding: 0;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: var(--game-bg);
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; height: var(--app-height);
+            overflow: hidden; user-select: none;
         }
 
         #game-container {
-            background-color: var(--game-container-bg);
-            width: 100%;
-            height: 100%; /* Fill the body */
-            max-width: 430px; /* iPhone 16 Pro Max width aesthetic */
-            border-radius: 40px; /* App frame rounded corners */
-            box-shadow: 0 10px 30px var(--shadow-medium);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden; /* Keep content within rounded frame */
-            position: relative;
+            background-color: var(--game-bg);
+            width: 100%; max-width: 430px;
+            height: 100%;
+            display: flex; flex-direction: column;
+            position: relative; overflow: hidden;
         }
 
-        /* Top Bar */
-        #top-bar {
-            padding: 15px 20px;
-            flex-shrink: 0; /* Prevent top bar from shrinking */
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            color: var(--text-dark);
-            font-size: 1.2rem;
-            font-weight: bold;
-            box-shadow: 0 2px 5px var(--shadow-light);
+        /* --- FIXED TIMELINE GUTTER --- */
+        #timeline-gutter {
+            position: absolute;
+            left: 0; top: 60px; bottom: 140px; /* Aligned with play area */
+            width: 50px;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: space-between;
+            padding: 20px 0;
+            pointer-events: none;
             z-index: 10;
         }
-        
-        #top-bar .arrow-back {
-             font-size: 1.8rem;
-             margin-right: 15px;
-             cursor: pointer;
-        }
 
-        /* Timeline Play Area */
-        #timeline-wrapper {
-            flex-grow: 1; /* Key for layout */
-            padding: 20px 10px;
-            overflow-y: auto; /* Scrollable timeline */
-            -webkit-overflow-scrolling: touch;
-            position: relative;
-        }
-
-        .timeline-fixed-label {
+        .gutter-line {
             position: absolute;
-            left: 20px;
-            font-size: 0.8rem;
-            color: #888;
-            writing-mode: vertical-lr;
-            text-orientation: mixed;
-            transform: rotate(180deg);
-            z-index: 20; /* High z-index to stay on top */
+            top: 40px; bottom: 40px;
+            width: 2px;
+            background: #ccc;
+            left: 50%; transform: translateX(-50%);
         }
-        .timeline-fixed-label.before { top: 20px; }
-        .timeline-fixed-label.after { bottom: 20px; }
 
+        .gutter-label {
+            font-size: 0.75rem; font-weight: bold; color: #888;
+            text-transform: uppercase; letter-spacing: 1px;
+            writing-mode: vertical-lr; transform: rotate(180deg);
+            background: var(--game-bg); padding: 5px 0;
+            z-index: 2;
+        }
+
+        /* --- PLAY AREA --- */
+        #timeline-wrapper {
+            flex-grow: 1;
+            padding: 20px 10px 20px 60px; /* Offset for the gutter */
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
+        }
 
         #timeline {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px; /* Spacing between cards */
-            width: 100%;
-            max-width: 350px;
-            margin: 0 auto; /* Center the timeline horizontally */
-            padding-left: 25px; /* Space for the timeline line */
-            padding-top: 30px; /* Space for 'Before' label */
-            padding-bottom: 30px; /* Space for 'After' label */
-            position: relative;
-        }
-
-        /* The vertical line that grows with content */
-        #timeline::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 2px;
-            height: 100%;
-            background-color: #ccc;
-            z-index: 1;
+            display: flex; flex-direction: column;
+            gap: 15px; width: 100%;
         }
 
         .timeline-card {
-            background-color: var(--card-white);
-            border-radius: var(--border-radius-card);
-            box-shadow: 0 5px 15px var(--shadow-light);
-            display: flex;
-            align-items: center;
-            width: 100%;
-            cursor: default;
-            transition: transform 0.5s ease-in-out, border-color 0.3s ease-in-out;
-            position: relative;
-            z-index: 5;
-            min-height: 100px;
+            background: var(--card-white);
+            border-radius: 15px;
+            box-shadow: 0 4px 10px var(--shadow);
+            display: flex; align-items: center;
+            width: 100%; min-height: 90px;
             border: 2px solid transparent;
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.3s;
         }
 
-        .timeline-card.correct {
-            border-color: var(--card-green);
+        .card-img {
+            width: 70px; height: 70px;
+            border-radius: 10px; margin: 10px;
+            object-fit: cover; flex-shrink: 0;
         }
 
-        .timeline-card.incorrect {
-            border-color: var(--card-pink);
-        }
+        .card-content { flex-grow: 1; padding-right: 15px; }
 
-        .card-image-container {
-            width: 80px;
-            height: 80px;
-            border-radius: 8px;
-            overflow: hidden;
-            margin: 10px;
-            flex-shrink: 0; /* Crucial fix for layout */
-            background-color: #eee;
-        }
-
-        .card-image-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-
-        .card-content {
-            flex-grow: 1; /* Crucial fix for layout */
-            padding: 10px 10px 10px 0;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .card-date {
-            font-size: 0.8rem;
-            font-weight: bold;
-            color: var(--text-dark);
-            margin-bottom: 5px;
-            padding: 4px 8px;
-            border-radius: 6px;
-            align-self: flex-start;
-            line-height: 1;
-            background-color: #f0f0f0;
-            transition: background-color 0.3s ease-in-out;
-        }
-
-        .timeline-card.correct .card-date {
-            background-color: var(--card-green);
-        }
-
-        .timeline-card.incorrect .card-date {
-            background-color: var(--card-pink);
+        .date-badge {
+            display: inline-block;
+            padding: 3px 8px; border-radius: 5px;
+            font-size: 0.75rem; font-weight: bold;
+            background: #eee; margin-bottom: 4px;
         }
 
         .card-text {
-            font-size: 0.95rem;
-            color: #555;
-            line-height: 1.3;
+            font-size: 0.9rem; color: #444; margin: 0;
+            line-height: 1.2;
         }
 
-        .timeline-card .feedback-icon {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            font-size: 0.9rem;
-            opacity: 0;
-            transform: scale(0.5);
-            transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .timeline-card .feedback-icon.show {
-            opacity: 1;
-            transform: scale(1);
-        }
-
-        .timeline-card .feedback-icon.correct-icon { color: var(--card-green); }
-        .timeline-card .feedback-icon.incorrect-icon { color: var(--card-pink); }
-
-        /* Card Holder Area */
-        #card-holder-area {
-            background-color: var(--card-white);
-            padding: 15px 20px;
-            flex-shrink: 0; /* Prevent holder from shrinking */
-            box-shadow: 0 -5px 20px var(--shadow-light);
-            z-index: 20;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 140px;
-            position: relative;
+        /* --- BOTTOM TRAY --- */
+        #tray {
+            height: 140px; background: white;
+            display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 -5px 15px var(--shadow);
+            z-index: 20; padding: 0 20px;
         }
 
         #current-card {
-            width: 90%;
-            max-width: 320px;
-            background-color: var(--card-white);
-            border-radius: var(--border-radius-card);
-            box-shadow: 0 5px 15px var(--shadow-medium);
-            display: flex;
-            align-items: center;
-            cursor: grab;
-            position: relative;
-            z-index: 10;
-            min-height: 100px;
-            touch-action: none;
-            transition: opacity 0.2s ease;
-        }
-        
-        #current-card.dragging {
-            opacity: 0.8;
-            transform: scale(1.05);
-            position: fixed;
-            z-index: 1000;
-            box-shadow: 0 10px 30px var(--shadow-medium);
+            width: 100%; max-width: 320px; height: 100px;
+            background: white; border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+            display: flex; align-items: center;
+            touch-action: none; position: relative;
         }
 
-        #current-card.hidden-drag {
-             opacity: 0;
-             pointer-events: none;
+        #current-card .card-text {
+            display: -webkit-box; -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical; overflow: hidden;
         }
 
-        /* Drag over indicator */
+        .dragging { opacity: 0.9; transform: scale(1.05); z-index: 1000; position: fixed !important; }
+
+        /* --- FEEDBACK --- */
         .card-drop-indicator {
-            height: 5px;
-            background-color: #8bb4e1;
-            width: 80%;
-            border-radius: 5px;
-            margin: 0 auto;
-            transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
-            opacity: 0;
+            height: 4px; background: #8bb4e1;
+            width: 90%; margin: 0 auto; border-radius: 2px;
+            opacity: 0; transition: opacity 0.2s;
+        }
+        .card-drop-indicator.show { opacity: 1; }
+
+        .correct { border-color: var(--card-green); }
+        .correct .date-badge { background: var(--card-green); }
+        .incorrect { border-color: var(--card-pink); }
+        .incorrect .date-badge { background: var(--card-pink); }
+
+        /* --- END GAME SCREEN --- */
+        #end-modal {
+            position: fixed; inset: 0;
+            background: #fdfaf3; z-index: 2000;
+            display: none; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 40px; text-align: center;
+        }
+
+        .medal-wrapper { position: relative; margin-bottom: 40px; }
+
+        /* CSS Medal Shape */
+        .medal-ribbon {
+            width: 60px; height: 100px;
+            background: #e35d5d; position: absolute;
+            top: -20px; left: 50%; transform: translateX(-50%);
+            clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 50% 85%, 0% 100%);
             z-index: 1;
         }
 
-        .card-drop-indicator.show {
-             opacity: 1;
-             transform: scaleY(1.5);
+        .medal-circle {
+            width: 120px; height: 120px;
+            border-radius: 50%; border: 6px solid #fff;
+            position: relative; z-index: 2;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 3.5rem; font-weight: 900; color: white;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
         }
 
-
-        /* Modal for Game End */
-        #game-end-modal {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #f7f0e3; /* Creamy background from video */
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            z-index: 100;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.5s ease, visibility 0.5s ease;
-            flex-direction: column;
-            padding: 40px 20px;
-            text-align: center;
-        }
-
-        #game-end-modal.show {
-            opacity: 1;
-            visibility: visible;
-        }
+        .gold-medal { background: linear-gradient(135deg, #ffd700, #b8860b); }
+        .silver-medal { background: linear-gradient(135deg, #e0e0e0, #888); }
+        .bronze-medal { background: linear-gradient(135deg, #cd7f32, #804a16); }
         
-        #end-game-title {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: var(--text-dark);
-        }
-        
-        #medal-container {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 4rem;
-            font-weight: bold;
-            color: white;
-            position: relative;
-            box-shadow: inset 0 -10px 20px rgba(0,0,0,0.2), 0 10px 20px rgba(0,0,0,0.1);
-        }
-        
-        #medal-container.gold {
-            background: linear-gradient(145deg, #ffd700, #f0c400);
-            border: 5px solid #ffde33;
-        }
-        #medal-container.silver {
-            background: linear-gradient(145deg, #e0e0e0, #c0c0c0);
-            border: 5px solid #d3d3d3;
-        }
-        #medal-container.bronze {
-            background: linear-gradient(145deg, #cd7f32, #b8732d);
-            border: 5px solid #d28c43;
-        }
-        #medal-container.star {
-            background: linear-gradient(145deg, #6c757d, #5a6268);
-            border: 5px solid #868e96;
+        /* Star Shape for 4+ */
+        .star-shape {
+            width: 130px; height: 130px;
+            background: #ffc107;
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 3rem; color: white; font-weight: 900;
         }
 
-        #end-game-result-text {
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: var(--text-dark);
-            margin-top: 20px;
-        }
+        h2 { font-size: 2rem; margin: 10px 0; color: var(--text-dark); }
+        .stats { font-size: 1.1rem; color: #666; margin-bottom: 40px; }
 
-        #play-again-button {
-            background-color: var(--card-white);
-            border: 2px solid #ccc;
-            padding: 12px 30px;
-            border-radius: 50px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: var(--text-dark);
-            cursor: pointer;
-            box-shadow: 0 5px 15px var(--shadow-light);
-            transition: background-color 0.2s ease, transform 0.1s ease;
+        .btn-restart {
+            padding: 15px 40px; border-radius: 30px;
+            border: none; background: var(--text-dark);
+            color: white; font-size: 1.1rem; font-weight: bold;
+            cursor: pointer; transition: transform 0.2s;
         }
-        
-        #play-again-button:active {
-            transform: scale(0.98);
-        }
-
-        /* Helper classes */
-        .hidden { display: none !important; }
-
-        /* Font Awesome for icons */
-        @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css");
+        .btn-restart:active { transform: scale(0.95); }
     </style>
 </head>
 <body>
 
-    <div id="game-container">
-        <div id="top-bar">
-             <span class="arrow-back"><i class="fas fa-arrow-left"></i></span>
-             Timeline Challenge
-        </div>
+<div id="game-container">
+    <div id="top-bar" style="padding: 15px 20px; font-weight: bold; border-bottom: 1px solid #ddd;">
+        Timeline Challenge
+    </div>
 
-        <div id="timeline-wrapper">
-            <div class="timeline-fixed-label before">Before</div>
-            <div class="timeline-fixed-label after">After</div>
-            <div id="timeline">
-                <!-- Cards will be dynamically inserted here -->
-            </div>
-        </div>
+    <div id="timeline-gutter">
+        <span class="gutter-label">Before</span>
+        <div class="gutter-line"></div>
+        <span class="gutter-label">After</span>
+    </div>
 
-        <div id="card-holder-area">
-            <div id="current-card" draggable="false">
-                 <div class="card-image-container">
-                    <img src="" alt="Event Image">
-                </div>
-                <div class="card-content">
-                    <div class="card-date">?</div>
-                    <div class="card-text">Drag this card to the timeline!</div>
-                </div>
+    <div id="timeline-wrapper">
+        <div id="timeline"></div>
+    </div>
+
+    <div id="tray">
+        <div id="current-card">
+            <img src="" class="card-img">
+            <div class="card-content">
+                <span class="date-badge">?</span>
+                <p class="card-text"></p>
             </div>
-        </div>
-        
-        <div id="game-end-modal">
-             <div id="end-game-title">Happy Anniversary</div>
-             <div id="medal-container">1</div>
-             <div id="end-game-result-text">Gold Medal!</div>
-             <button id="play-again-button" onclick="restartGame()">Play Again</button>
         </div>
     </div>
 
-    <script>
-        const cardsData = [
-            { id: 'potatoes', image: 'https://picsum.photos/id/1080/150/150', text: 'Potatoes brought to Europe', date: new Date('1550-01-01') },
-            { id: 'french-fashion', image: 'https://picsum.photos/id/1083/150/150', text: 'French potato fashion', date: new Date('1770-01-01') },
-            { id: 'mashed-potato-dance', image: 'https://picsum.photos/id/1042/150/150', text: 'Mashed Potato dance craze', date: new Date('1960-01-01') },
-            { id: 'snl-salad', image: 'https://picsum.photos/id/1063/150/150', text: 'Raisin potato salad on SNL', date: new Date('2018-01-01') },
-            { id: 'mcdonalds-fries', image: 'https://picsum.photos/id/1084/150/150', text: "McDonald's adds fries to the menu", date: new Date('1949-01-01') },
-            { id: 'printing-press', image: 'https://picsum.photos/id/357/150/150', text: 'Gutenberg invents printing press', date: new Date('1440-01-01') },
-            { id: 'electric-light', image: 'https://picsum.photos/id/166/150/150', text: 'First practical light bulb', date: new Date('1879-01-01') },
-            { id: 'moon-landing', image: 'https://picsum.photos/id/1049/150/150', text: 'Apollo 11 Moon landing', date: new Date('1969-07-20') },
-            { id: 'internet-born', image: 'https://picsum.photos/id/972/150/150', text: 'ARPANET created', date: new Date('1969-10-29') },
-            { id: 'apple-founded', image: 'https://picsum.photos/id/145/150/150', text: 'Apple Inc. founded', date: new Date('1976-04-01') },
-            { id: 'fall-berlin-wall', image: 'https://picsum.photos/id/141/150/150', text: 'Fall of the Berlin Wall', date: new Date('1989-11-09') },
-            { id: 'first-iphone', image: 'https://picsum.photos/id/345/150/150', text: 'First iPhone released', date: new Date('2007-01-09') }
-        ];
+    <div id="end-modal">
+        <h1 id="anniversary-msg" style="margin-bottom: 10px;">Happy Anniversary!</h1>
+        <div class="medal-wrapper" id="medal-slot"></div>
+        <h2 id="rank-name">Gold Rank</h2>
+        <p class="stats" id="accuracy-stats"></p>
+        <button class="btn-restart" onclick="location.reload()">Play Again</button>
+    </div>
+</div>
 
-        // --- DOM Elements ---
-        const timeline = document.getElementById('timeline');
-        const currentCardElement = document.getElementById('current-card');
-        const timelineWrapper = document.getElementById('timeline-wrapper');
-        const gameEndModal = document.getElementById('game-end-modal');
-        const medalContainer = document.getElementById('medal-container');
-        const resultTextElement = document.getElementById('end-game-result-text');
+<script>
+    const cardsData = [
+        { id: 1, date: new Date(1440, 0, 1), text: "Gutenberg invents the printing press", img: "https://picsum.photos/id/357/150/150" },
+        { id: 2, date: new Date(1550, 0, 1), text: "Potatoes brought to Europe", img: "https://picsum.photos/id/1080/150/150" },
+        { id: 3, date: new Date(1770, 0, 1), text: "French potato fashion (Marie Antoinette)", img: "https://picsum.photos/id/1083/150/150" },
+        { id: 4, date: new Date(1879, 0, 1), text: "Edison's practical light bulb", img: "https://picsum.photos/id/166/150/150" },
+        { id: 5, date: new Date(1949, 0, 1), text: "McDonald's adds fries to the menu", img: "https://picsum.photos/id/1084/150/150" },
+        { id: 6, date: new Date(1960, 0, 1), text: "Mashed Potato dance craze", img: "https://picsum.photos/id/1042/150/150" },
+        { id: 7, date: new Date(1969, 6, 20), text: "Apollo 11 Moon landing", img: "https://picsum.photos/id/1049/150/150" },
+        { id: 8, date: new Date(1969, 9, 29), text: "ARPANET (early internet) created", img: "https://picsum.photos/id/972/150/150" },
+        { id: 9, date: new Date(1976, 3, 1), text: "Apple Inc. founded", img: "https://picsum.photos/id/145/150/150" },
+        { id: 10, date: new Date(1989, 10, 9), text: "Fall of the Berlin Wall", img: "https://picsum.photos/id/141/150/150" },
+        { id: 11, date: new Date(2007, 0, 9), text: "First iPhone released", img: "https://picsum.photos/id/345/150/150" },
+        { id: 12, date: new Date(2018, 0, 1), text: "Raisin potato salad viral on SNL", img: "https://picsum.photos/id/1063/150/150" }
+    ];
 
-        // --- Game State ---
-        let unplacedCards = [];
-        let placedCards = [];
-        let currentCardData = null;
-        let wrongAnswers = 0;
-        let dragTargetIndex = -1;
+    let unplaced = [];
+    let placed = [];
+    let mistakes = 0;
+    let isDragging = false;
+    let startY, initialTop, currentDragIndex = -1;
 
-        // --- Drag & Scroll State ---
-        let isDragging = false;
-        let initialOffsetX, initialOffsetY;
-        let scrollInterval = null;
+    const trayCard = document.getElementById('current-card');
+    const timeline = document.getElementById('timeline');
+    const wrapper = document.getElementById('timeline-wrapper');
 
-        // --- Viewport Height Management ---
-        const setAppHeight = () => {
-            document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`);
-        };
-        window.addEventListener('resize', setAppHeight);
-        
-        // --- Core Game Logic ---
-        const initializeGame = () => {
-            setAppHeight();
-            unplacedCards = [...cardsData].sort(() => Math.random() - 0.5);
-            placedCards = [];
-            wrongAnswers = 0;
-            timeline.innerHTML = '';
-            renderDropIndicators();
-            gameEndModal.classList.remove('show');
-            loadNextCard();
-        };
+    function setAppHeight() {
+        document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`);
+    }
+    window.addEventListener('resize', setAppHeight);
+    setAppHeight();
 
-        const loadNextCard = () => {
-            if (unplacedCards.length === 0) {
-                setTimeout(endGame, 500); // Give a moment before showing end screen
-                return;
+    function init() {
+        unplaced = [...cardsData].sort(() => Math.random() - 0.5);
+        renderIndicators();
+        nextCard();
+    }
+
+    function renderIndicators() {
+        timeline.innerHTML = '';
+        for (let i = 0; i <= placed.length; i++) {
+            const ind = document.createElement('div');
+            ind.className = 'card-drop-indicator';
+            ind.dataset.index = i;
+            timeline.appendChild(ind);
+            if (i < placed.length) timeline.appendChild(placed[i].el);
+        }
+    }
+
+    function nextCard() {
+        if (unplaced.length === 0) return endGame();
+        const data = unplaced.shift();
+        trayCard.dataset.id = data.id;
+        trayCard.querySelector('img').src = data.img;
+        trayCard.querySelector('.card-text').textContent = data.text;
+        trayCard.style.visibility = 'visible';
+    }
+
+    // --- Drag Logic ---
+    trayCard.addEventListener('touchstart', (e) => {
+        isDragging = true;
+        const touch = e.touches[0];
+        const rect = trayCard.getBoundingClientRect();
+        initialTop = rect.top;
+        trayCard.classList.add('dragging');
+        trayCard.style.width = rect.width + 'px';
+    });
+
+    document.addEventListener('touchmove', (e) => {
+        if (!isDragging) return;
+        e.preventDefault();
+        const touch = e.touches[0];
+        trayCard.style.top = (touch.clientY - 50) + 'px';
+        trayCard.style.left = touch.clientX - (trayCard.offsetWidth/2) + 'px';
+
+        // Auto Scroll
+        const wrapperRect = wrapper.getBoundingClientRect();
+        if (touch.clientY < wrapperRect.top + 50) wrapper.scrollTop -= 10;
+        if (touch.clientY > wrapperRect.bottom - 50) wrapper.scrollTop += 10;
+
+        // Find drop index
+        let closestInd = -1;
+        let minDist = Infinity;
+        document.querySelectorAll('.card-drop-indicator').forEach(ind => {
+            const rect = ind.getBoundingClientRect();
+            const d = Math.abs(touch.clientY - rect.top);
+            ind.classList.remove('show');
+            if (d < minDist && d < 60) {
+                minDist = d;
+                closestInd = parseInt(ind.dataset.index);
             }
-            currentCardData = unplacedCards.shift();
-            // Update card content
-            currentCardElement.querySelector('img').src = currentCardData.image;
-            currentCardElement.querySelector('.card-text').textContent = currentCardData.text;
-            currentCardElement.querySelector('.card-date').textContent = '?';
-            // Make card visible for next round
-            currentCardElement.classList.remove('hidden-drag');
-        };
-        
-        const createCardElement = (cardData) => {
-            const cardEl = document.createElement('div');
-            cardEl.classList.add('timeline-card');
-            cardEl.dataset.id = cardData.id;
-            cardEl.innerHTML = `
-                <div class="card-image-container">
-                    <img src="${cardData.image}" alt="${cardData.text}">
-                </div>
-                <div class="card-content">
-                    <div class="card-date">${formatDate(cardData.date)}</div>
-                    <div class="card-text">${cardData.text}</div>
-                </div>
-                <div class="feedback-icon correct-icon"><i class="fas fa-check"></i></div>
-                <div class="feedback-icon incorrect-icon"><i class="fas fa-times"></i></div>
-            `;
-            return cardEl;
-        };
+        });
+        currentDragIndex = closestInd;
+        if (closestInd !== -1) {
+            document.querySelector(`.card-drop-indicator[data-index="${closestInd}"]`).classList.add('show');
+        }
+    }, { passive: false });
 
-        const placeCard = async (cardData, insertionIndex) => {
-            currentCardElement.classList.add('hidden-drag'); // Hide draggable card
+    document.addEventListener('touchend', () => {
+        if (!isDragging) return;
+        isDragging = false;
+        trayCard.classList.remove('dragging');
+        trayCard.style.position = 'relative';
+        trayCard.style.top = 'auto'; trayCard.style.left = 'auto';
 
-            const newCardObject = { cardData, element: createCardElement(cardData) };
+        if (currentDragIndex !== -1) {
+            handlePlacement(currentDragIndex);
+        }
+    });
+
+    async function handlePlacement(index) {
+        const data = cardsData.find(c => c.id == trayCard.dataset.id);
+        const cardEl = createPlacedCard(data);
+        trayCard.style.visibility = 'hidden';
+
+        // Check relative correctness
+        const temp = [...placed];
+        temp.splice(index, 0, { data });
+        const correct = (index === 0 || temp[index-1].data.date <= data.date) && 
+                        (index === temp.length - 1 || data.date <= temp[index+1].data.date);
+
+        if (correct) {
+            cardEl.classList.add('correct');
+            placed.splice(index, 0, { data, el: cardEl });
+            renderIndicators();
+        } else {
+            mistakes++;
+            cardEl.classList.add('incorrect');
+            // Show at wrong position first
+            insertAt(cardEl, index);
             
-            // Temporarily insert to check correctness
-            const tempPlacedCards = [...placedCards];
-            tempPlacedCards.splice(insertionIndex, 0, newCardObject);
-            const isCorrect = checkCorrectness(tempPlacedCards, tempPlacedCards.indexOf(newCardObject));
+            await new Promise(r => setTimeout(r, 800));
 
-            if (isCorrect) {
-                placedCards.splice(insertionIndex, 0, newCardObject);
-                rebuildTimelineDOM(); // Re-render with new card at correct place
-                
-                // Show feedback on the newly added card
-                const placedElement = placedCards.find(p => p.cardData.id === cardData.id).element;
-                placedElement.classList.add('correct');
-                placedElement.querySelector('.feedback-icon.correct-icon').classList.add('show');
-            } else {
-                wrongAnswers++;
-                // Add card to DOM at wrong position for animation
-                insertCardAtDOMIndex(newCardObject.element, insertionIndex);
-                newCardObject.element.classList.add('incorrect');
-                newCardObject.element.querySelector('.feedback-icon.incorrect-icon').classList.add('show');
-
-                await new Promise(resolve => setTimeout(resolve, 500)); // Pause to show red feedback
-                
-                const firstRect = newCardObject.element.getBoundingClientRect();
-                
-                // Add to array, sort, and rebuild to find final position
-                placedCards.push(newCardObject);
-                placedCards.sort((a, b) => a.cardData.date.getTime() - b.cardData.date.getTime());
-                rebuildTimelineDOM();
-                
-                const lastRect = newCardObject.element.getBoundingClientRect();
-                const deltaY = firstRect.top - lastRect.top;
-                
-                // FLIP Animation
-                if (Math.abs(deltaY) > 1) { // Only animate if there's a move
-                    newCardObject.element.style.transform = `translateY(${deltaY}px)`;
-                    newCardObject.element.style.transition = 'transform 0s';
-                    requestAnimationFrame(() => {
-                        newCardObject.element.style.transition = 'transform 0.5s ease-in-out';
-                        newCardObject.element.style.transform = 'translateY(0)';
-                    });
-
-                    // Auto-scroll into view after animation
-                    newCardObject.element.addEventListener('transitionend', () => {
-                        newCardObject.element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }, { once: true });
-                }
-            }
-
-            setTimeout(loadNextCard, 250); // Fast load next
-        };
-        
-        const insertCardAtDOMIndex = (element, index) => {
-             const indicators = document.querySelectorAll('.card-drop-indicator');
-             if (index >= indicators.length) {
-                 timeline.appendChild(element);
-             } else {
-                 timeline.insertBefore(element, indicators[index]);
-             }
-        };
-
-        const checkCorrectness = (cards, index) => {
-            const card = cards[index];
-            if (!card) return false;
-            const isAfterPrev = (index === 0) || (cards[index - 1].cardData.date <= card.cardData.date);
-            const isBeforeNext = (index === cards.length - 1) || (card.cardData.date <= cards[index + 1].cardData.date);
-            return isAfterPrev && isBeforeNext;
-        };
-        
-        const rebuildTimelineDOM = () => {
-            const fragment = document.createDocumentFragment();
-            placedCards.forEach(p => fragment.appendChild(p.element));
-            timeline.innerHTML = '';
-            timeline.appendChild(fragment);
-            renderDropIndicators();
-        };
-
-        const renderDropIndicators = () => {
-            document.querySelectorAll('.card-drop-indicator').forEach(indicator => indicator.remove());
-            for (let i = 0; i <= placedCards.length; i++) {
-                const indicator = document.createElement('div');
-                indicator.classList.add('card-drop-indicator');
-                indicator.dataset.index = i;
-                if (i < placedCards.length) {
-                    timeline.insertBefore(indicator, placedCards[i].element);
-                } else {
-                    timeline.appendChild(indicator);
-                }
-            }
-            if (placedCards.length === 0) {
-                 timeline.querySelector('.card-drop-indicator').classList.add('show');
-            }
-        };
-
-        const formatDate = (date) => date.toLocaleString('en-US', { year: 'numeric', month: 'short' });
-
-        // --- Touch Listeners & Auto-Scroll ---
-        const startScroll = (direction) => {
-            if (scrollInterval) return;
-            scrollInterval = setInterval(() => {
-                timelineWrapper.scrollTop += direction === 'down' ? 10 : -10;
-            }, 50);
-        };
-
-        const stopScroll = () => {
-            clearInterval(scrollInterval);
-            scrollInterval = null;
-        };
-
-        currentCardElement.addEventListener('touchstart', (e) => {
-            if (e.touches.length !== 1 || currentCardElement.classList.contains('hidden-drag')) return;
-            isDragging = true;
-            currentCardElement.classList.add('dragging');
-
-            const touch = e.touches[0];
-            const rect = currentCardElement.getBoundingClientRect();
-            initialOffsetX = touch.clientX - rect.left;
-            initialOffsetY = touch.clientY - rect.top;
-
-            currentCardElement.style.left = `${rect.left}px`;
-            currentCardElement.style.top = `${rect.top}px`;
-            currentCardElement.style.width = `${rect.width}px`;
-            currentCardElement.style.position = 'fixed';
-            currentCardElement.style.transform = `translate(0,0)`;
-        });
-
-        currentCardElement.addEventListener('touchmove', (e) => {
-            if (!isDragging) return;
-            e.preventDefault();
-            const touch = e.touches[0];
-            const x = touch.clientX - initialOffsetX - parseFloat(currentCardElement.style.left);
-            const y = touch.clientY - initialOffsetY - parseFloat(currentCardElement.style.top);
-            currentCardElement.style.transform = `translate(${x}px, ${y}px)`;
-
-            const timelineRect = timelineWrapper.getBoundingClientRect();
-            const scrollZone = timelineRect.height * 0.15;
-            if (touch.clientY < timelineRect.top + scrollZone) startScroll('up');
-            else if (touch.clientY > timelineRect.bottom - scrollZone) startScroll('down');
-            else stopScroll();
-
-            // Find closest drop target
-            dragTargetIndex = -1;
-            let closestDist = Infinity;
-            document.querySelectorAll('.card-drop-indicator').forEach(indicator => {
-                indicator.classList.remove('show');
-                const rect = indicator.getBoundingClientRect();
-                const dist = Math.abs(touch.clientY - (rect.top + rect.height / 2));
-                if (dist < closestDist && dist < 50) { // Increased tolerance
-                    closestDist = dist;
-                    dragTargetIndex = parseInt(indicator.dataset.index);
-                }
-            });
-            if (dragTargetIndex !== -1) {
-                document.querySelector(`.card-drop-indicator[data-index="${dragTargetIndex}"]`).classList.add('show');
-            }
-        });
-        
-        const resetCurrentCardPosition = () => {
-             currentCardElement.style.position = 'relative';
-             currentCardElement.style.left = 'auto';
-             currentCardElement.style.top = 'auto';
-             currentCardElement.style.width = 'auto';
-             currentCardElement.style.transform = 'none';
-        };
-
-        currentCardElement.addEventListener('touchend', (e) => {
-            if (!isDragging) return;
-            isDragging = false;
-            stopScroll();
-            currentCardElement.classList.remove('dragging');
-            hideAllDropIndicators();
+            // Move to correct position
+            placed.push({ data, el: cardEl });
+            placed.sort((a, b) => a.data.date - b.data.date);
+            renderIndicators();
             
-            if (dragTargetIndex !== -1) {
-                placeCard(currentCardData, dragTargetIndex);
-            }
-            resetCurrentCardPosition();
-        });
+            // Center the card
+            cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            await new Promise(r => setTimeout(r, 600));
+        }
+        setTimeout(nextCard, 300);
+    }
+
+    function insertAt(el, index) {
+        const indicators = document.querySelectorAll('.card-drop-indicator');
+        timeline.insertBefore(el, indicators[index]);
+    }
+
+    function createPlacedCard(data) {
+        const div = document.createElement('div');
+        div.className = 'timeline-card';
+        div.innerHTML = `
+            <img src="${data.img}" class="card-img">
+            <div class="card-content">
+                <span class="date-badge">${data.date.getFullYear() < 0 ? Math.abs(data.date.getFullYear()) + ' BC' : data.date.getFullYear()}</span>
+                <p class="card-text">${data.text}</p>
+            </div>
+        `;
+        return div;
+    }
+
+    function endGame() {
+        const modal = document.getElementById('end-modal');
+        const slot = document.getElementById('medal-slot');
+        const rank = document.getElementById('rank-name');
+        const stats = document.getElementById('accuracy-stats');
         
-        const hideAllDropIndicators = () => {
-             document.querySelectorAll('.card-drop-indicator.show').forEach(el => el.classList.remove('show'));
-        };
+        let medalHtml = '';
+        if (mistakes === 0) {
+            medalHtml = '<div class="medal-ribbon"></div><div class="medal-circle gold-medal">1</div>';
+            rank.textContent = "Gold Rank";
+        } else if (mistakes === 1) {
+            medalHtml = '<div class="medal-ribbon"></div><div class="medal-circle silver-medal">2</div>';
+            rank.textContent = "Silver Rank";
+        } else if (mistakes === 2) {
+            medalHtml = '<div class="medal-ribbon"></div><div class="medal-circle bronze-medal">3</div>';
+            rank.textContent = "Bronze Rank";
+        } else {
+            medalHtml = '<div class="star-shape">4</div>';
+            rank.textContent = "Star Rank";
+        }
 
-        const endGame = () => {
-             let resultText = '';
-             let number = '';
-             let medalClass = '';
+        slot.innerHTML = medalHtml;
+        stats.textContent = `Mistakes: ${mistakes} | Accuracy: ${Math.round(( (12-mistakes)/12 ) * 100)}%`;
+        modal.style.display = 'flex';
+    }
 
-             if (wrongAnswers === 0) {
-                 resultText = "Gold Medal!";
-                 number = '1';
-                 medalClass = 'gold';
-             } else if (wrongAnswers === 1) {
-                 resultText = "Silver Medal!";
-                 number = '2';
-                 medalClass = 'silver';
-             } else if (wrongAnswers === 2) {
-                 resultText = "Bronze Medal!";
-                 number = '3';
-                 medalClass = 'bronze';
-             } else {
-                 resultText = "Nice Try!";
-                 number = '4';
-                 medalClass = 'star';
-             }
+    init();
+</script>
 
-             medalContainer.textContent = number;
-             medalContainer.className = ''; // Clear previous classes
-             medalContainer.classList.add(medalClass);
-             resultTextElement.textContent = resultText;
-             
-             gameEndModal.classList.add('show');
-        };
-        
-        const restartGame = () => initializeGame();
-
-        // --- Start Game ---
-        initializeGame();
-    </script>
 </body>
 </html>
