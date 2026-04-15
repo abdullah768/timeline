@@ -5,22 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Timeline Puzzle for My Love!</title>
     <!-- No favicon to avoid Chrome warnings and match original app -->
-    <!-- Font Awesome for tick/cross icons and header icons -->
+    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         :root {
             --yellow-bg: #FFD700; /* A vibrant yellow */
             --card-bg-light: #FFFFFF;
-            --card-shadow: rgba(0, 0, 0, 0.15); /* More pronounced shadow */
+            --card-shadow: rgba(0, 0, 0, 0.1); /* Subtle shadow for placed cards */
+            --card-holder-shadow: rgba(0, 0, 0, 0.2); /* Stronger shadow for card in holder */
             --text-color: #333;
             --header-text-color: #000;
             --timeline-line-color: #ccc;
-            --insertion-point-color: #007bff;
-            --correct-color: #28a745;
-            --incorrect-color: #dc3545;
+            --insertion-point-color: #007bff; /* Blue for active insertion point */
+            --correct-color: #28a745; /* Green for correct */
+            --incorrect-color: #dc3545; /* Red for incorrect */
             --modal-bg: rgba(0, 0, 0, 0.6);
             --modal-content-bg: #fff;
-            --active-card-border: #007bff; /* Border for selected card */
         }
 
         /* Base styles for iPhone 16 Pro Max */
@@ -51,11 +51,11 @@
         /* Header Styles */
         .app-header {
             background-color: var(--yellow-bg);
-            padding: 1.5vh 4vw; /* Adjusted padding */
+            padding: 1.5vh 4vw; /* Matches original app padding */
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 1.5vh;
+            gap: 1.5vh; /* Space between top bar and banner */
             position: relative;
             overflow: hidden;
         }
@@ -65,7 +65,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 2vw;
+            padding: 0 2vw; /* Inner padding for icons */
             z-index: 1;
         }
 
@@ -96,9 +96,9 @@
         .play-puzzle-banner {
             background-color: var(--card-bg-light);
             border-radius: 2.5vh;
-            padding: 2.5vh 6vw; /* Original padding for banner */
+            padding: 2.5vh 6vw; /* Matches original app banner size */
             box-shadow: 0 4px 10px var(--card-shadow);
-            font-size: 3.2vh; /* Original font size for banner */
+            font-size: 3.2vh; /* Matches original app banner font size */
             font-weight: 600;
             color: var(--header-text-color);
             text-align: center;
@@ -113,7 +113,7 @@
             flex-grow: 1;
             display: flex;
             flex-direction: column;
-            background-color: #F8F8F8;
+            background-color: #F8F8F8; /* Light grey background for the game area */
             border-top-left-radius: 4vh;
             border-top-right-radius: 4vh;
             overflow: hidden;
@@ -131,10 +131,10 @@
 
         .timeline-line {
             position: absolute;
-            left: 10vw;
+            left: 10vw; /* Position of the vertical line */
             top: 0;
             bottom: 0;
-            width: 2px; /* Original thickness */
+            width: 2px; /* Matches original app thickness */
             background-color: var(--timeline-line-color);
             z-index: 0;
         }
@@ -142,34 +142,34 @@
         .timeline-label {
             position: absolute;
             left: 10vw;
-            transform-origin: 0 0;
-            transform: translateX(-50%) rotate(-90deg); /* Vertical text */
+            transform-origin: 0 0; /* Rotate around its top-left corner */
+            transform: translateX(-50%) rotate(-90deg); /* Rotate text */
             font-size: 1.8vh;
             font-weight: 500;
             color: #888;
-            background-color: #F8F8F8;
+            background-color: #F8F8F8; /* Match game-area background */
             padding: 0 1vw;
             z-index: 1;
-            white-space: nowrap;
+            white-space: nowrap; /* Prevent text wrapping */
         }
 
         .before-label {
-            top: 10vh;
-            left: calc(10vw - 1.5vh);
+            top: 10vh; /* Adjusted position after rotation */
+            left: calc(10vw - 1.5vh); /* Fine-tune position */
         }
 
         .after-label {
-            bottom: 10vh;
-            left: calc(10vw - 1.5vh);
+            bottom: 10vh; /* Adjusted position after rotation */
+            left: calc(10vw - 1.5vh); /* Fine-tune position */
         }
 
         .timeline-cards-container {
             display: flex;
             flex-direction: column;
             align-items: flex-start;
-            padding-left: calc(10vw + 20px);
+            padding-left: calc(10vw + 20px); /* Offset for the timeline line + some margin */
             padding-right: 4vw;
-            gap: 2vh; /* Original spacing */
+            gap: 2vh; /* Space between cards */
             min-height: 100%;
             box-sizing: border-box;
         }
@@ -186,7 +186,7 @@
             max-width: 80vw;
             box-sizing: border-box;
             position: relative;
-            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out, border 0.2s ease-in-out;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
             margin-left: 0;
         }
 
@@ -204,9 +204,9 @@
         }
 
         .card-image {
-            width: 10vh; /* Original image size */
+            width: 10vh; /* Matches original image size */
             height: 10vh;
-            border-radius: 1.5vh; /* Original border-radius */
+            border-radius: 1.5vh; /* Matches original border-radius */
             object-fit: cover;
             margin-right: 3vw;
             flex-shrink: 0;
@@ -220,19 +220,19 @@
             gap: 0.5vh;
         }
 
-        .card-date-pill { /* Renamed from card-date-pill to card-date-box for clarity */
-            background-color: rgba(0, 0, 0, 0.08);
+        .card-date-box { /* Renamed for clarity, matches original app's date styling */
+            background-color: rgba(0, 0, 0, 0.08); /* Light grey background for box */
             border-radius: 0.8vh; /* Slightly less rounded for box look */
             padding: 0.5vh 1.5vw;
-            font-size: 1.8vh; /* Original font size for date */
+            font-size: 1.8vh; /* Matches original font size for date */
             font-weight: 600;
             color: #555;
-            align-self: flex-start;
+            align-self: flex-start; /* Align box to left */
             margin-bottom: 0.5vh;
         }
 
         .card-text {
-            font-size: 2.2vh; /* Original text size */
+            font-size: 2.2vh; /* Matches original text size */
             line-height: 1.3;
             color: var(--text-color);
         }
@@ -246,21 +246,21 @@
         }
 
         .card-status-icon.correct {
-            color: var(--correct-color);
+            color: var(--correct-color); /* Green for correct */
         }
 
         .card-status-icon.incorrect {
-            color: var(--incorrect-color);
+            color: var(--incorrect-color); /* Red for incorrect */
         }
 
         /* Insertion Point Styles */
         .insertion-point {
             width: 100%;
-            height: 2vh; /* Very subtle height */
+            height: 2vh; /* Subtle height for insertion area */
             display: flex;
             justify-content: center;
             align-items: center;
-            cursor: pointer; /* Indicate clickable */
+            cursor: grab; /* Indicate draggable target */
             position: relative;
             z-index: 2;
             transition: background-color 0.2s ease-in-out;
@@ -279,8 +279,8 @@
             transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
         }
 
-        .insertion-point.active::before { /* Active state for insertion point */
-            background-color: var(--insertion-point-color); /* Blue dot when active */
+        .insertion-point.drag-over::before { /* Visual feedback for drag-over */
+            background-color: var(--insertion-point-color); /* Blue dot on drag-over */
             transform: translateX(-50%) scale(1.2); /* Slightly larger */
         }
 
@@ -301,14 +301,14 @@
         .card-holder-container .card {
             width: 90%;
             max-width: 90vw;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
-            cursor: pointer; /* Indicate clickable */
+            box-shadow: 0 8px 20px var(--card-holder-shadow); /* More prominent shadow */
+            cursor: grab;
             transform: rotate(-2deg); /* Slight rotation */
-            border: 2px solid transparent; /* Default transparent border */
         }
 
-        .card-holder-container .card.active {
-            border: 2px solid var(--active-card-border); /* Blue border when active */
+        .card-holder-container .card.dragging {
+            opacity: 0.7; /* Visual feedback when dragging */
+            transform: rotate(-2deg) scale(0.95); /* Slightly shrink when dragging */
         }
 
         .remaining-cards-count {
@@ -479,7 +479,6 @@
     let currentCard = null; // The card currently in the holder
     let wrongAnswersCount = 0;
     let isGameActive = false;
-    let isCardSelected = false; // New state for tap-to-place
 
     // --- DOM Elements ---
     const timelineCardsContainer = document.getElementById('timeline-cards-container');
@@ -516,7 +515,8 @@
         cardDiv.setAttribute('data-color', cardData.color); // Set data-color for CSS styling
 
         if (isCurrentCardInHolder) {
-            cardDiv.addEventListener('click', handleCardHolderClick); // Tap to select
+            cardDiv.setAttribute('draggable', 'true'); // Make the card in holder draggable
+            cardDiv.addEventListener('dragstart', handleDragStart);
         }
 
         const cardImage = document.createElement('img');
@@ -527,8 +527,8 @@
         const cardContent = document.createElement('div');
         cardContent.className = 'card-content';
 
-        const cardDateBox = document.createElement('span'); // Changed to Box
-        cardDateBox.className = 'card-date-pill'; // Keeping class name for now, but it's a box
+        const cardDateBox = document.createElement('span'); // Element for date box
+        cardDateBox.className = 'card-date-box';
         cardDateBox.textContent = formatDate(cardData.date);
 
         const cardText = document.createElement('div');
@@ -559,40 +559,48 @@
     function createInsertionPoint(index) {
         const insertionPoint = document.createElement('div');
         insertionPoint.className = 'insertion-point';
-        insertionPoint.setAttribute('data-index', index); // Store index for tap target
-        insertionPoint.addEventListener('click', () => handleInsertionPointClick(index));
+        insertionPoint.setAttribute('data-index', index); // Store index for drop target
+        insertionPoint.addEventListener('dragover', handleDragOver);
+        insertionPoint.addEventListener('dragleave', handleDragLeave);
+        insertionPoint.addEventListener('drop', handleDrop);
         return insertionPoint;
     }
 
-    // --- Tap-to-Place Handlers ---
-    function handleCardHolderClick() {
-        if (!isGameActive || !currentCard) return;
+    // --- Drag and Drop Handlers ---
+    function handleDragStart(event) {
+        if (!isGameActive || !currentCard) {
+            event.preventDefault();
+            return;
+        }
+        event.dataTransfer.setData('text/plain', currentCard.id); // Pass the ID of the card being dragged
+        event.currentTarget.classList.add('dragging'); // Add visual feedback for the dragged card
+    }
 
-        const cardInHolder = cardHolderContainer.querySelector('.card');
-        if (cardInHolder) {
-            isCardSelected = !isCardSelected; // Toggle selection
-            cardInHolder.classList.toggle('active', isCardSelected);
-            // Toggle active class on insertion points
-            document.querySelectorAll('.insertion-point').forEach(point => {
-                point.classList.toggle('active', isCardSelected);
-            });
+    function handleDragOver(event) {
+        event.preventDefault(); // Necessary to allow dropping
+        if (isGameActive && currentCard) {
+            event.currentTarget.classList.add('drag-over'); // Visual feedback for drop target
         }
     }
 
-    function handleInsertionPointClick(insertionIndex) {
-        if (!isGameActive || !currentCard || !isCardSelected) return; // Only place if card is selected
+    function handleDragLeave(event) {
+        event.currentTarget.classList.remove('drag-over');
+    }
 
+    function handleDrop(event) {
+        event.preventDefault();
+        event.currentTarget.classList.remove('drag-over'); // Remove visual feedback
+
+        if (!isGameActive || !currentCard) return; // Ensure there's a card to drop
+
+        const insertionIndex = parseInt(event.currentTarget.getAttribute('data-index'));
         handleCardPlacement(insertionIndex);
 
-        // Reset selection state
-        isCardSelected = false;
-        const cardInHolder = cardHolderContainer.querySelector('.card');
-        if (cardInHolder) {
-            cardInHolder.classList.remove('active');
+        // Remove dragging class from the card holder
+        const draggingCardElement = cardHolderContainer.querySelector('.card.dragging');
+        if (draggingCardElement) {
+            draggingCardElement.classList.remove('dragging');
         }
-        document.querySelectorAll('.insertion-point').forEach(point => {
-            point.classList.remove('active');
-        });
     }
 
     // --- Game Logic Functions ---
@@ -604,7 +612,6 @@
         unplacedCards = [];
         currentCard = null;
         isGameActive = true;
-        isCardSelected = false; // Reset selection state
         resultModal.style.display = 'none'; // Hide modal
 
         // 1. Sort all events to get the correct chronological order
@@ -659,7 +666,7 @@
     }
 
     function handleCardPlacement(insertionIndex) {
-        const cardToPlace = currentCard;
+        const cardToPlace = currentCard; // This is the card that was dragged
         let actualInsertionIndex = insertionIndex; // This is where the user *tried* to place it
 
         // Determine the correct chronological position for the cardToPlace
