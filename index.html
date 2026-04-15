@@ -66,6 +66,12 @@
             box-shadow: 0 2px 5px var(--shadow-light);
             z-index: 10;
         }
+        
+        #top-bar .arrow-back {
+             font-size: 1.8rem;
+             margin-right: 15px;
+             cursor: pointer;
+        }
 
         /* Timeline Play Area */
         #timeline-wrapper {
@@ -73,46 +79,22 @@
             padding: 20px 10px;
             overflow-y: auto; /* Scrollable timeline */
             -webkit-overflow-scrolling: touch;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
             position: relative;
         }
 
-        #timeline-label {
+        .timeline-label {
             position: absolute;
             left: 20px;
-            top: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
             font-size: 0.8rem;
             color: #888;
-            height: calc(100% - 40px); /* Adjust height to span timeline wrapper */
-            justify-content: space-between;
-            z-index: 1;
-        }
-
-        #timeline-label::before {
-            content: '';
-            width: 2px;
-            height: calc(100% - 2 * 20px);
-            background-color: #ccc;
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            top: 20px;
-            z-index: -1;
-        }
-
-        #timeline-label span {
             writing-mode: vertical-lr;
             text-orientation: mixed;
             transform: rotate(180deg);
-            padding: 5px 0;
-            background-color: var(--game-container-bg);
             z-index: 2;
         }
+        .timeline-label.before { top: 20px; }
+        .timeline-label.after { bottom: 20px; }
+
 
         #timeline {
             display: flex;
@@ -121,9 +103,22 @@
             gap: 15px; /* Spacing between cards */
             width: 100%;
             max-width: 350px;
-            padding-left: 50px;
+            margin: 0 auto; /* Center the timeline horizontally */
+            padding-left: 25px; /* Space for the timeline line */
             padding-bottom: 20px;
             position: relative;
+        }
+
+        /* The vertical line that grows with content */
+        #timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 2px;
+            height: 100%;
+            background-color: #ccc;
+            z-index: 1;
         }
 
         .timeline-card {
@@ -134,7 +129,7 @@
             align-items: center;
             width: 100%;
             cursor: default;
-            transition: transform 0.4s ease-in-out, border-color 0.3s ease-in-out;
+            transition: transform 0.5s ease-in-out, border-color 0.3s ease-in-out;
             position: relative;
             z-index: 5;
             min-height: 100px;
@@ -149,32 +144,32 @@
             border-color: var(--card-pink);
         }
 
-        .timeline-card .card-image-container {
+        .card-image-container {
             width: 80px;
             height: 80px;
             border-radius: 8px;
             overflow: hidden;
             margin: 10px;
-            flex-shrink: 0;
+            flex-shrink: 0; /* Crucial fix for layout */
             background-color: #eee;
         }
 
-        .timeline-card .card-image-container img {
+        .card-image-container img {
             width: 100%;
             height: 100%;
             object-fit: cover;
             display: block;
         }
 
-        .timeline-card .card-content {
-            flex-grow: 1;
+        .card-content {
+            flex-grow: 1; /* Crucial fix for layout */
             padding: 10px 10px 10px 0;
             display: flex;
             flex-direction: column;
             justify-content: center;
         }
 
-        .timeline-card .card-date {
+        .card-date {
             font-size: 0.8rem;
             font-weight: bold;
             color: var(--text-dark);
@@ -195,7 +190,7 @@
             background-color: var(--card-pink);
         }
 
-        .timeline-card .card-text {
+        .card-text {
             font-size: 0.95rem;
             color: #555;
             line-height: 1.3;
@@ -221,13 +216,8 @@
             transform: scale(1);
         }
 
-        .timeline-card .feedback-icon.correct-icon {
-            color: var(--card-green);
-        }
-
-        .timeline-card .feedback-icon.incorrect-icon {
-            color: var(--card-pink);
-        }
+        .timeline-card .feedback-icon.correct-icon { color: var(--card-green); }
+        .timeline-card .feedback-icon.incorrect-icon { color: var(--card-pink); }
 
         /* Card Holder Area */
         #card-holder-area {
@@ -272,10 +262,6 @@
              pointer-events: none;
         }
 
-        #current-card .card-date {
-            background-color: #f0f0f0;
-        }
-        
         /* Drag over indicator */
         .card-drop-indicator {
             height: 5px;
@@ -335,9 +321,7 @@
         }
 
         /* Helper classes */
-        .hidden {
-            display: none !important;
-        }
+        .hidden { display: none !important; }
 
         /* Font Awesome for icons */
         @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css");
@@ -347,14 +331,13 @@
 
     <div id="game-container">
         <div id="top-bar">
-            <!-- Content here -->
+             <span class="arrow-back"><i class="fas fa-arrow-left"></i></span>
+             Timeline Challenge
         </div>
 
         <div id="timeline-wrapper">
-            <div id="timeline-label">
-                <span>Before</span>
-                <span>After</span>
-            </div>
+            <div class="timeline-label before">Before</div>
+            <div class="timeline-label after">After</div>
             <div id="timeline">
                 <!-- Cards will be dynamically inserted here -->
             </div>
@@ -397,7 +380,6 @@
         ];
 
         // --- DOM Elements ---
-        const gameContainer = document.getElementById('game-container');
         const timeline = document.getElementById('timeline');
         const currentCardElement = document.getElementById('current-card');
         const timelineWrapper = document.getElementById('timeline-wrapper');
@@ -467,30 +449,66 @@
             return cardEl;
         };
 
-        const placeCard = (cardData, insertionIndex) => {
+        const placeCard = async (cardData, insertionIndex) => {
             currentCardElement.classList.add('hidden-drag'); // Hide draggable card
 
-            const tempPlacedCards = [...placedCards];
             const newCardObject = { cardData, element: createCardElement(cardData) };
+            
+            // Temporarily insert to check correctness
+            const tempPlacedCards = [...placedCards];
             tempPlacedCards.splice(insertionIndex, 0, newCardObject);
-
             const isCorrect = checkCorrectness(tempPlacedCards, tempPlacedCards.indexOf(newCardObject));
 
             if (isCorrect) {
-                newCardObject.element.classList.add('correct');
-                newCardObject.element.querySelector('.feedback-icon.correct-icon').classList.add('show');
-                placedCards = tempPlacedCards; // Commit the correct order
+                placedCards.splice(insertionIndex, 0, newCardObject);
+                rebuildTimelineDOM(); // Re-render with new card at correct place
+                
+                // Show feedback on the newly added card
+                const placedElement = placedCards.find(p => p.cardData.id === cardData.id).element;
+                placedElement.classList.add('correct');
+                placedElement.querySelector('.feedback-icon.correct-icon').classList.add('show');
             } else {
                 wrongAnswers++;
+                // Add card to DOM at wrong position for animation
+                insertCardAtDOMIndex(newCardObject.element, insertionIndex);
                 newCardObject.element.classList.add('incorrect');
                 newCardObject.element.querySelector('.feedback-icon.incorrect-icon').classList.add('show');
-                // Add to placedCards and sort to find correct position
+
+                await new Promise(resolve => setTimeout(resolve, 500)); // Pause to show red feedback
+                
+                const firstRect = newCardObject.element.getBoundingClientRect();
+                
+                // Add to array, sort, and rebuild to find final position
                 placedCards.push(newCardObject);
                 placedCards.sort((a, b) => a.cardData.date.getTime() - b.cardData.date.getTime());
+                rebuildTimelineDOM();
+                
+                const lastRect = newCardObject.element.getBoundingClientRect();
+                const deltaY = firstRect.top - lastRect.top;
+                
+                // FLIP Animation
+                newCardObject.element.style.transform = `translateY(${deltaY}px)`;
+                newCardObject.element.style.transition = 'transform 0s';
+                newCardObject.element.offsetHeight; // Force reflow
+                newCardObject.element.style.transition = 'transform 0.5s ease-in-out';
+                newCardObject.element.style.transform = 'translateY(0)';
+
+                // Auto-scroll into view after animation
+                newCardObject.element.addEventListener('transitionend', () => {
+                    newCardObject.element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, { once: true });
             }
 
-            rebuildTimelineDOM(); // Re-render the timeline
-            setTimeout(loadNextCard, 250); // Fast load
+            setTimeout(loadNextCard, 250); // Fast load next
+        };
+        
+        const insertCardAtDOMIndex = (element, index) => {
+             const indicators = document.querySelectorAll('.card-drop-indicator');
+             if (index >= indicators.length) {
+                 timeline.appendChild(element);
+             } else {
+                 timeline.insertBefore(element, indicators[index]);
+             }
         };
 
         const checkCorrectness = (cards, index) => {
@@ -553,14 +571,18 @@
 
             currentCardElement.style.left = `${rect.left}px`;
             currentCardElement.style.top = `${rect.top}px`;
+            currentCardElement.style.width = `${rect.width}px`;
             currentCardElement.style.position = 'fixed';
+            currentCardElement.style.transform = `translate(0,0)`;
         });
 
         currentCardElement.addEventListener('touchmove', (e) => {
             if (!isDragging) return;
             e.preventDefault();
             const touch = e.touches[0];
-            currentCardElement.style.transform = `translate(${touch.clientX - initialOffsetX - parseFloat(currentCardElement.style.left)}px, ${touch.clientY - initialOffsetY - parseFloat(currentCardElement.style.top)}px)`;
+            const x = touch.clientX - initialOffsetX - parseFloat(currentCardElement.style.left);
+            const y = touch.clientY - initialOffsetY - parseFloat(currentCardElement.style.top);
+            currentCardElement.style.transform = `translate(${x}px, ${y}px)`;
 
             const timelineRect = timelineWrapper.getBoundingClientRect();
             const scrollZone = timelineRect.height * 0.15;
@@ -575,7 +597,7 @@
                 indicator.classList.remove('show');
                 const rect = indicator.getBoundingClientRect();
                 const dist = Math.abs(touch.clientY - (rect.top + rect.height / 2));
-                if (dist < closestDist) {
+                if (dist < closestDist && dist < 50) { // Increased tolerance
                     closestDist = dist;
                     dragTargetIndex = parseInt(indicator.dataset.index);
                 }
@@ -589,6 +611,7 @@
              currentCardElement.style.position = 'relative';
              currentCardElement.style.left = 'auto';
              currentCardElement.style.top = 'auto';
+             currentCardElement.style.width = 'auto';
              currentCardElement.style.transform = 'none';
         };
 
@@ -602,7 +625,7 @@
             if (dragTargetIndex !== -1) {
                 placeCard(currentCardData, dragTargetIndex);
             }
-             resetCurrentCardPosition();
+            resetCurrentCardPosition();
         });
         
         const hideAllDropIndicators = () => {
