@@ -21,7 +21,7 @@
         body {
             margin: 0; padding: 0;
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            background-color: #333; /* Darker outside the phone frame */
+            background-color: #1a1a1a;
             display: flex; justify-content: center; align-items: center;
             height: 100vh; height: var(--app-height);
             overflow: hidden; user-select: none;
@@ -33,31 +33,30 @@
             height: 100%;
             display: flex; flex-direction: column;
             position: relative; overflow: hidden;
-            box-shadow: 0 0 50px rgba(0,0,0,0.5);
         }
 
         /* --- FIXED TIMELINE GUTTER --- */
         #timeline-gutter {
             position: absolute;
             left: 0; top: 60px; bottom: 140px;
-            width: 50px;
+            width: 55px;
             display: flex; flex-direction: column;
             align-items: center; justify-content: space-between;
-            padding: 30px 0;
+            padding: 40px 0;
             pointer-events: none;
             z-index: 10;
         }
 
         .gutter-line {
             position: absolute;
-            top: 50px; bottom: 50px;
+            top: 60px; bottom: 60px;
             width: 2px;
-            background: #ccc;
+            background: #ddd;
             left: 50%; transform: translateX(-50%);
         }
 
         .gutter-label {
-            font-size: 0.7rem; font-weight: 800; color: #aaa;
+            font-size: 0.75rem; font-weight: 900; color: #bbb;
             text-transform: uppercase; letter-spacing: 1.5px;
             writing-mode: vertical-lr; transform: rotate(180deg);
             background: var(--game-bg); padding: 10px 0;
@@ -67,49 +66,56 @@
         /* --- PLAY AREA --- */
         #timeline-wrapper {
             flex-grow: 1;
-            padding: 20px 15px 20px 65px;
+            padding: 20px 15px 20px 70px;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
-            scroll-behavior: smooth;
+            position: relative;
         }
 
         #timeline {
             display: flex; flex-direction: column;
-            gap: 15px; width: 100%;
+            width: 100%;
             position: relative;
+        }
+
+        /* Container for smooth height expansion */
+        .card-slot {
+            overflow: hidden;
+            transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
         }
 
         .timeline-card {
             background: var(--card-white);
-            border-radius: 15px;
+            border-radius: 18px;
             box-shadow: 0 4px 12px var(--shadow);
             display: flex; align-items: center;
-            width: 100%; min-height: 95px;
+            width: 100%; height: 100px;
             border: 2px solid transparent;
-            position: relative;
-            z-index: 5;
+            flex-shrink: 0;
         }
 
         .card-img {
-            width: 75px; height: 75px;
+            width: 80px; height: 80px;
             border-radius: 12px; margin: 10px;
             object-fit: cover; flex-shrink: 0;
             background: #eee;
         }
 
-        .card-content { flex-grow: 1; padding-right: 20px; overflow: hidden; }
+        .card-content { flex-grow: 1; padding-right: 15px; overflow: hidden; }
 
         .date-badge {
             display: inline-block;
             padding: 4px 10px; border-radius: 6px;
             font-size: 0.8rem; font-weight: bold;
-            background: #e0e0e0; margin-bottom: 5px;
-            transition: background 0.3s;
+            background: #e5e5e5; margin-bottom: 4px;
         }
 
         .card-text {
             font-size: 0.95rem; color: #333; margin: 0;
-            line-height: 1.3; font-weight: 500;
+            line-height: 1.2; font-weight: 500;
             display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
         }
 
@@ -117,34 +123,40 @@
         #tray {
             height: 140px; background: white;
             display: flex; justify-content: center; align-items: center;
-            box-shadow: 0 -5px 20px var(--shadow);
+            box-shadow: 0 -5px 25px var(--shadow);
             z-index: 100; padding: 0 20px;
         }
 
         #current-card {
-            width: 100%; max-width: 320px; height: 105px;
-            background: white; border-radius: 15px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            width: 100%; max-width: 340px; height: 100px;
+            background: white; border-radius: 18px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
             display: flex; align-items: center;
             touch-action: none; position: relative;
         }
 
-        .dragging { opacity: 0.9; transform: scale(1.08); z-index: 5000; position: fixed !important; pointer-events: none; }
+        .dragging { opacity: 0.9; transform: scale(1.05); z-index: 5000; position: fixed !important; pointer-events: none; }
 
         /* --- FEEDBACK --- */
         .card-drop-indicator {
-            height: 6px; background: #8bb4e1;
-            width: 95%; margin: 0 auto; border-radius: 3px;
-            opacity: 0; transition: opacity 0.2s;
+            height: 0px; 
+            width: 100%; 
+            transition: height 0.3s;
+            position: relative;
         }
-        .card-drop-indicator.show { opacity: 1; }
+        .card-drop-indicator.show { height: 10px; }
+        .card-drop-indicator::after {
+            content: ''; position: absolute; top: 3px; left: 0; right: 0; height: 4px;
+            background: #8bb4e1; border-radius: 2px; opacity: 0;
+        }
+        .card-drop-indicator.show::after { opacity: 1; }
 
-        .correct { border-color: var(--card-green); transition: border-color 0.3s; }
+        .correct { border-color: var(--card-green); }
         .correct .date-badge { background: var(--card-green); }
-        .incorrect { border-color: var(--card-pink); transition: border-color 0.3s; }
+        .incorrect { border-color: var(--card-pink); }
         .incorrect .date-badge { background: var(--card-pink); }
 
-        /* --- END GAME SCREEN --- */
+        /* --- END GAME --- */
         #end-modal {
             position: fixed; inset: 0;
             background: #fdfaf3; z-index: 10000;
@@ -153,24 +165,23 @@
             padding: 40px; text-align: center;
         }
 
-        .medal-wrapper { position: relative; margin-bottom: 40px; height: 160px; display: flex; align-items: center; justify-content: center; }
+        .medal-wrapper { position: relative; margin-bottom: 50px; height: 160px; display: flex; align-items: center; justify-content: center; }
 
         .medal-ribbon {
-            width: 50px; height: 90px;
+            width: 55px; height: 95px;
             background: #e35d5d; position: absolute;
-            top: -10px; left: 50%; transform: translateX(-50%);
+            top: -15px; left: 50%; transform: translateX(-50%);
             clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 50% 80%, 0% 100%);
             z-index: 1; border: 2px solid rgba(0,0,0,0.1);
         }
 
         .medal-circle {
-            width: 110px; height: 110px;
+            width: 115px; height: 115px;
             border-radius: 50%; border: 6px solid #fff;
             position: relative; z-index: 2;
             display: flex; align-items: center; justify-content: center;
-            font-size: 3rem; font-weight: 900; color: white;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-            text-align: center;
+            font-size: 3.5rem; font-weight: 900; color: white;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         }
 
         .gold-medal { background: linear-gradient(135deg, #ffd700, #b8860b); }
@@ -178,31 +189,27 @@
         .bronze-medal { background: linear-gradient(135deg, #cd7f32, #804a16); }
         
         .star-shape {
-            width: 130px; height: 130px;
+            width: 135px; height: 135px;
             background: #ffc107;
             clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
             display: flex; align-items: center; justify-content: center;
-            font-size: 2.8rem; color: white; font-weight: 900;
-            box-shadow: 0 0 20px rgba(255, 193, 7, 0.4);
+            font-size: 3rem; color: white; font-weight: 900;
+            box-shadow: 0 0 30px rgba(255, 193, 7, 0.4);
             padding-top: 5px;
         }
 
-        h2 { font-size: 1.8rem; margin: 5px 0; color: var(--text-dark); }
-        .stats { font-size: 1rem; color: #777; margin-bottom: 30px; }
-
         .btn-restart {
-            padding: 16px 50px; border-radius: 40px;
+            padding: 18px 60px; border-radius: 40px;
             border: none; background: #333;
             color: white; font-size: 1.1rem; font-weight: bold;
             cursor: pointer; transition: transform 0.2s;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
     </style>
 </head>
 <body>
 
 <div id="game-container">
-    <div id="top-bar" style="padding: 18px 20px; font-weight: 800; border-bottom: 1px solid #eee; font-size: 1.1rem;">
+    <div id="top-bar" style="padding: 20px; font-weight: 800; border-bottom: 1px solid #eee;">
         Timeline Challenge
     </div>
 
@@ -227,10 +234,10 @@
     </div>
 
     <div id="end-modal">
-        <h1 id="anniversary-msg" style="margin-bottom: 5px; font-weight: 900; color: #d63384;">Happy Anniversary!</h1>
+        <h1 style="margin-bottom: 5px; font-weight: 900; color: #d63384;">Happy Anniversary!</h1>
         <div class="medal-wrapper" id="medal-slot"></div>
-        <h2 id="rank-name">Gold Rank</h2>
-        <p class="stats" id="accuracy-stats"></p>
+        <h2 id="rank-name" style="margin: 5px 0;">Rank</h2>
+        <p class="stats" id="accuracy-stats" style="color: #888; margin-bottom: 30px;"></p>
         <button class="btn-restart" onclick="location.reload()">Play Again</button>
     </div>
 </div>
@@ -256,7 +263,7 @@
     let mistakes = 0;
     let isDragging = false;
     let currentDragIndex = -1;
-    let initialX, initialY;
+    let initialX, initialY, cameraInterval;
 
     const trayCard = document.getElementById('current-card');
     const timeline = document.getElementById('timeline');
@@ -270,26 +277,40 @@
 
     function init() {
         unplaced = [...cardsData].sort(() => Math.random() - 0.5);
-        
-        // Start with 1 random card already in the area
         const seed = unplaced.shift();
-        const seedEl = createPlacedCard(seed);
+        const seedEl = createCardEl(seed);
         seedEl.classList.add('correct');
         placed.push({ data: seed, el: seedEl });
         
-        renderTimeline();
+        renderTimeline(false);
         nextCard();
     }
 
-    function renderTimeline() {
+    function renderTimeline(animate = true) {
         timeline.innerHTML = '';
-        for (let i = 0; i <= placed.length; i++) {
+        placed.forEach((item, i) => {
             const ind = document.createElement('div');
             ind.className = 'card-drop-indicator';
             ind.dataset.index = i;
             timeline.appendChild(ind);
-            if (i < placed.length) timeline.appendChild(placed[i].el);
-        }
+
+            const slot = document.createElement('div');
+            slot.className = 'card-slot';
+            slot.appendChild(item.el);
+            // If new, start at height 0 then animate to 100
+            if (animate && item.isNew) {
+                slot.style.height = '0px';
+                requestAnimationFrame(() => slot.style.height = '100px');
+                item.isNew = false;
+            } else {
+                slot.style.height = '100px';
+            }
+            timeline.appendChild(slot);
+        });
+        const lastInd = document.createElement('div');
+        lastInd.className = 'card-drop-indicator';
+        lastInd.dataset.index = placed.length;
+        timeline.appendChild(lastInd);
     }
 
     function nextCard() {
@@ -301,7 +322,6 @@
         trayCard.style.visibility = 'visible';
     }
 
-    // --- Drag Logic ---
     trayCard.addEventListener('touchstart', (e) => {
         isDragging = true;
         const touch = e.touches[0];
@@ -320,8 +340,8 @@
         trayCard.style.top = (touch.clientY - initialY) + 'px';
 
         const wrapperRect = wrapper.getBoundingClientRect();
-        if (touch.clientY < wrapperRect.top + 70) wrapper.scrollTop -= 8;
-        if (touch.clientY > wrapperRect.bottom - 70) wrapper.scrollTop += 8;
+        if (touch.clientY < wrapperRect.top + 70) wrapper.scrollTop -= 10;
+        if (touch.clientY > wrapperRect.bottom - 70) wrapper.scrollTop += 10;
 
         let closestInd = -1;
         let minDist = Infinity;
@@ -329,15 +349,13 @@
             const rect = ind.getBoundingClientRect();
             const d = Math.abs(touch.clientY - (rect.top + rect.height / 2));
             ind.classList.remove('show');
-            if (d < minDist && d < 70) {
+            if (d < minDist && d < 80) {
                 minDist = d;
                 closestInd = parseInt(ind.dataset.index);
             }
         });
         currentDragIndex = closestInd;
-        if (closestInd !== -1) {
-            document.querySelector(`.card-drop-indicator[data-index="${closestInd}"]`).classList.add('show');
-        }
+        if (closestInd !== -1) document.querySelector(`.card-drop-indicator[data-index="${closestInd}"]`).classList.add('show');
     }, { passive: false });
 
     document.addEventListener('touchend', () => {
@@ -346,17 +364,13 @@
         trayCard.classList.remove('dragging');
         trayCard.style.position = 'relative';
         trayCard.style.top = 'auto'; trayCard.style.left = 'auto';
-
-        if (currentDragIndex !== -1) {
-            handlePlacement(currentDragIndex);
-        } else {
-            trayCard.style.visibility = 'visible';
-        }
+        if (currentDragIndex !== -1) handlePlacement(currentDragIndex);
+        else trayCard.style.visibility = 'visible';
     });
 
     async function handlePlacement(index) {
         const data = cardsData.find(c => c.id == trayCard.dataset.id);
-        const cardEl = createPlacedCard(data);
+        const cardEl = createCardEl(data);
         trayCard.style.visibility = 'hidden';
 
         const temp = [...placed];
@@ -366,55 +380,66 @@
 
         if (correct) {
             cardEl.classList.add('correct');
-            placed.splice(index, 0, { data, el: cardEl });
-            renderTimeline();
-            nextCard();
+            placed.splice(index, 0, { data, el: cardEl, isNew: true });
+            renderTimeline(true);
+            setTimeout(nextCard, 800);
         } else {
             mistakes++;
             cardEl.classList.add('incorrect');
             
-            // 1. Show at wrong drop spot
+            // Show at wrong drop spot first
             const indicators = document.querySelectorAll('.card-drop-indicator');
-            timeline.insertBefore(cardEl, indicators[index]);
+            const dummySlot = document.createElement('div');
+            dummySlot.className = 'card-slot';
+            dummySlot.style.height = '100px';
+            dummySlot.appendChild(cardEl);
+            timeline.insertBefore(dummySlot, indicators[index]);
             
-            await new Promise(r => setTimeout(r, 1000)); // Pause to let user see error
+            await new Promise(r => setTimeout(r, 1200));
 
-            // 2. Start FLIP Animation
             const firstRect = cardEl.getBoundingClientRect();
-
-            // Find correct index
             placed.push({ data, el: cardEl });
             placed.sort((a, b) => a.data.date - b.data.date);
-            
-            renderTimeline(); // Put it in correct DOM order
+            renderTimeline(false);
 
             const lastRect = cardEl.getBoundingClientRect();
             const deltaY = firstRect.top - lastRect.top;
 
-            // Invert & Play
+            // TRACKING CAMERA: Synchronize scroll with the sliding card
+            let startTime = null;
+            const duration = 1800;
+
+            function step(timestamp) {
+                if (!startTime) startTime = timestamp;
+                const progress = (timestamp - startTime) / duration;
+                
+                if (progress < 1) {
+                    // Constant "Camera" check: keep the card in center
+                    cardEl.scrollIntoView({ block: 'center' });
+                    requestAnimationFrame(step);
+                }
+            }
+
             cardEl.style.transition = 'none';
             cardEl.style.transform = `translateY(${deltaY}px)`;
-            cardEl.offsetHeight; // force reflow
+            cardEl.offsetHeight; 
             
-            cardEl.style.transition = 'transform 1.5s cubic-bezier(0.45, 0, 0.55, 1)';
+            cardEl.style.transition = 'transform 1.8s cubic-bezier(0.45, 0, 0.55, 1)';
             cardEl.style.transform = 'translateY(0)';
 
-            // Center view on correctly placed card
-            cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-            await new Promise(r => setTimeout(r, 1600));
+            requestAnimationFrame(step);
+            await new Promise(r => setTimeout(r, 2000));
             nextCard();
         }
     }
 
-    function createPlacedCard(data) {
+    function createCardEl(data) {
         const div = document.createElement('div');
         div.className = 'timeline-card';
-        const year = data.date.getFullYear();
         div.innerHTML = `
             <img src="${data.img}" class="card-img">
             <div class="card-content">
-                <span class="date-badge">${year}</span>
+                <span class="date-badge">${data.date.getFullYear()}</span>
                 <p class="card-text">${data.text}</p>
             </div>
         `;
@@ -443,12 +468,11 @@
         }
 
         slot.innerHTML = medalHtml;
-        stats.textContent = `Mistakes: ${mistakes} | Accuracy: ${Math.round(( (12-mistakes)/12 ) * 100)}%`;
+        stats.textContent = `Mistakes: ${mistakes} | Accuracy: ${Math.round(((12-mistakes)/12)*100)}%`;
         modal.style.display = 'flex';
     }
 
     init();
 </script>
-
 </body>
 </html>
