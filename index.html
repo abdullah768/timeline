@@ -4,15 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Timeline Puzzle for My Love!</title>
-    <!-- Favicon to prevent 404 error -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥔</text></svg>">
+    <!-- No favicon to avoid Chrome warnings and match original app -->
     <!-- Font Awesome for tick/cross icons and header icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         :root {
             --yellow-bg: #FFD700; /* A vibrant yellow */
             --card-bg-light: #FFFFFF;
-            --card-shadow: rgba(0, 0, 0, 0.1);
+            --card-shadow: rgba(0, 0, 0, 0.15); /* More pronounced shadow */
             --text-color: #333;
             --header-text-color: #000;
             --timeline-line-color: #ccc;
@@ -52,62 +51,37 @@
         /* Header Styles */
         .app-header {
             background-color: var(--yellow-bg);
-            padding: 1.5vh 4vw;
+            padding: 2vh 4vw; /* Adjusted padding */
             display: flex;
             flex-direction: column;
-            align-items: center;
-            gap: 1.5vh;
-            position: relative; /* For the background shapes */
+            align-items: flex-start; /* Align back arrow to left */
+            position: relative;
             overflow: hidden;
+            height: 8vh; /* Fixed height for header */
+            justify-content: center;
         }
 
         .header-top-bar {
             width: 100%;
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-start; /* Only back arrow on left */
             align-items: center;
-            padding: 0 2vw;
-            z-index: 1; /* Ensure icons are above background shapes */
+            padding: 0; /* Reset padding */
+            z-index: 1;
         }
 
-        .book-icon-container {
-            background-color: #FFC0CB; /* Pink */
-            border-radius: 50%;
+        .back-arrow-container {
             width: 8vh;
             height: 8vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        .book-icon-container i {
-            color: #fff;
             font-size: 4vh;
+            color: #000; /* Black arrow */
         }
 
-        .stars-container {
-            display: flex;
-            gap: 1vw;
-            font-size: 3vh;
-            color: #fff;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
-        }
-
-        .play-puzzle-banner {
-            background-color: var(--card-bg-light);
-            border-radius: 2.5vh;
-            padding: 1.5vh 4vw; /* Adjusted for more compact look */
-            box-shadow: 0 4px 10px var(--card-shadow);
-            font-size: 2.5vh;   /* Adjusted for more compact look */
-            font-weight: 600;
-            color: var(--header-text-color);
-            text-align: center;
-            width: 80%; /* Adjust width */
-            max-width: 400px; /* Max width for larger screens */
-            box-sizing: border-box;
-            z-index: 1;
-        }
+        /* Removed .book-icon-container and .stars-container */
+        /* Removed .play-puzzle-banner */
 
         /* Game Area */
         .game-area {
@@ -117,7 +91,7 @@
             background-color: #F8F8F8; /* Light grey background for the game area */
             border-top-left-radius: 4vh;
             border-top-right-radius: 4vh;
-            overflow: hidden; /* Contains the timeline and card holder */
+            overflow: hidden;
             position: relative;
         }
 
@@ -125,9 +99,9 @@
         .timeline-wrapper {
             flex-grow: 1;
             position: relative;
-            padding: 2vh 0; /* Vertical padding for content */
-            overflow-y: auto; /* Enable scrolling for the timeline */
-            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+            padding: 2vh 0;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         .timeline-line {
@@ -135,39 +109,43 @@
             left: 10vw; /* Position of the vertical line */
             top: 0;
             bottom: 0;
-            width: 2px;
+            width: 1px; /* Thinner line */
             background-color: var(--timeline-line-color);
-            z-index: 0; /* Behind cards */
+            z-index: 0;
         }
 
         .timeline-label {
             position: absolute;
             left: 10vw;
-            transform: translateX(-50%);
+            transform-origin: 0 0; /* Rotate around its top-left corner */
+            transform: translateX(-50%) rotate(-90deg); /* Rotate text */
             font-size: 1.8vh;
             font-weight: 500;
             color: #888;
-            background-color: #F8F8F8; /* Match game-area background */
+            background-color: #F8F8F8;
             padding: 0 1vw;
             z-index: 1;
+            white-space: nowrap; /* Prevent text wrapping */
         }
 
         .before-label {
-            top: 1vh;
+            top: 10vh; /* Adjusted position after rotation */
+            left: calc(10vw - 1.5vh); /* Fine-tune position */
         }
 
         .after-label {
-            bottom: 1vh;
+            bottom: 10vh; /* Adjusted position after rotation */
+            left: calc(10vw - 1.5vh); /* Fine-tune position */
         }
 
         .timeline-cards-container {
             display: flex;
             flex-direction: column;
-            align-items: flex-start; /* Align cards to the left */
+            align-items: flex-start;
             padding-left: calc(10vw + 20px); /* Offset for the timeline line + some margin */
             padding-right: 4vw;
-            gap: 2vh; /* Space between cards */
-            min-height: 100%; /* Ensure container takes full height for scrolling */
+            gap: 1.5vh; /* Slightly less space between cards */
+            min-height: 100%;
             box-sizing: border-box;
         }
 
@@ -179,12 +157,12 @@
             display: flex;
             align-items: center;
             padding: 1.5vh 2vw;
-            width: 100%; /* Take full width of its container */
-            max-width: 80vw; /* Limit card width */
+            width: 100%;
+            max-width: 80vw;
             box-sizing: border-box;
             position: relative;
             transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-            margin-left: 0; /* Reset margin */
+            margin-left: 0;
         }
 
         .card.incorrect {
@@ -201,12 +179,12 @@
         }
 
         .card-image {
-            width: 10vh; /* Square image */
-            height: 10vh;
-            border-radius: 1.5vh;
+            width: 8vh; /* Slightly smaller image */
+            height: 8vh;
+            border-radius: 1.2vh; /* Slightly less rounded */
             object-fit: cover;
             margin-right: 3vw;
-            flex-shrink: 0; /* Prevent image from shrinking */
+            flex-shrink: 0;
         }
 
         .card-content {
@@ -217,14 +195,19 @@
             gap: 0.5vh;
         }
 
-        .card-date {
-            font-size: 1.8vh;
+        .card-date-pill {
+            background-color: rgba(0, 0, 0, 0.08); /* Light grey background for pill */
+            border-radius: 1vh; /* Pill shape */
+            padding: 0.5vh 1.5vw;
+            font-size: 1.6vh; /* Smaller font for date */
             font-weight: 600;
-            color: #666;
+            color: #555;
+            align-self: flex-start; /* Align pill to left */
+            margin-bottom: 0.5vh;
         }
 
         .card-text {
-            font-size: 2.2vh;
+            font-size: 2.1vh; /* Slightly smaller text */
             line-height: 1.3;
             color: var(--text-color);
         }
@@ -234,49 +217,43 @@
             top: 1.5vh;
             right: 2vw;
             font-size: 2.5vh;
+            color: #ccc; /* Default grey for outline */
         }
 
         .card-status-icon.correct {
-            color: var(--correct-color);
+            color: var(--correct-color); /* Green for correct */
         }
 
         .card-status-icon.incorrect {
-            color: var(--incorrect-color);
+            color: var(--incorrect-color); /* Red for incorrect */
         }
 
         /* Insertion Point Styles */
         .insertion-point {
             width: 100%;
-            height: 4vh; /* Height of the clickable area */
+            height: 3vh; /* Smaller height for subtle line */
             display: flex;
             justify-content: center;
             align-items: center;
-            cursor: grab; /* Indicate draggable target */
+            cursor: grab;
             position: relative;
-            z-index: 2; /* Above timeline line */
+            z-index: 2;
             transition: background-color 0.2s ease-in-out;
         }
 
         .insertion-point::before {
             content: '';
             position: absolute;
-            left: calc(10vw - 20px); /* Align with timeline line */
-            width: 1.5vh;
-            height: 1.5vh;
-            background-color: var(--insertion-point-color);
-            border-radius: 50%;
-            opacity: 0.7;
-            transition: opacity 0.2s ease-in-out, background-color 0.2s ease-in-out;
-        }
-
-        .insertion-point:hover::before {
-            opacity: 1;
+            left: calc(10vw - 1px); /* Align with timeline line */
+            width: 1px; /* Thin line */
+            height: 100%; /* Full height of insertion point */
+            background-color: transparent; /* Invisible by default */
+            transition: background-color 0.2s ease-in-out;
         }
 
         .insertion-point.drag-over::before {
-            background-color: var(--drag-over-color);
-            opacity: 1;
-            transform: scale(1.2); /* Make it slightly larger on drag-over */
+            background-color: var(--drag-over-color); /* Blue line on drag-over */
+            width: 2px; /* Slightly thicker line on drag-over */
         }
 
         /* Card Holder */
@@ -287,23 +264,42 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 18vh; /* Minimum height for the holder */
+            min-height: 18vh;
             box-sizing: border-box;
-            z-index: 10; /* Ensure it's above timeline content */
+            z-index: 10;
+            position: relative; /* For the count */
         }
 
         .card-holder-container .card {
-            width: 90%; /* Make the card in holder a bit wider */
+            width: 90%;
             max-width: 90vw;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
-            cursor: grab; /* Indicate draggable */
+            box-shadow: 0 8px 20px rgba(0,0,0,0.25); /* More prominent shadow */
+            cursor: grab;
+            transform: rotate(-2deg); /* Slight rotation */
         }
+
+        .remaining-cards-count {
+            position: absolute;
+            left: 4vw;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 2.5vh;
+            font-weight: 600;
+            color: #888;
+            display: flex;
+            align-items: center;
+            gap: 0.5vw;
+        }
+        .remaining-cards-count i {
+            font-size: 2vh;
+        }
+
 
         /* Modal Styles */
         .modal {
             display: none; /* Hidden by default */
             position: fixed;
-            z-index: 100; /* Sit on top */
+            z-index: 100;
             left: 0;
             top: 0;
             width: 100%;
@@ -350,8 +346,8 @@
 
         #result-medal .gold { color: gold; }
         #result-medal .silver { color: silver; }
-        #result-medal .bronze { color: #cd7f32; } /* Bronze color */
-        #result-medal .star { color: #FFD700; } /* Yellow star */
+        #result-medal .bronze { color: #cd7f32; }
+        #result-medal .star { color: #FFD700; }
 
 
         #play-again-button {
@@ -385,16 +381,10 @@
 <div class="app-container">
     <header class="app-header">
         <div class="header-top-bar">
-            <div class="book-icon-container">
-                <i class="fas fa-book"></i>
+            <div class="back-arrow-container">
+                <i class="fas fa-arrow-left"></i>
             </div>
-            <div class="stars-container">
-                <i class="fas fa-star"></i>
-                <i class="far fa-circle"></i>
-            </div>
-        </div>
-        <div class="play-puzzle-banner">
-            Play a special puzzle daily!
+            <!-- Removed stars-container and play-puzzle-banner -->
         </div>
     </header>
 
@@ -410,6 +400,9 @@
         </div>
 
         <div id="card-holder-container" class="card-holder-container">
+            <div class="remaining-cards-count">
+                <i class="fas fa-clone"></i> <span id="unplaced-count"></span>
+            </div>
             <!-- Current card to be placed will be rendered here by JavaScript -->
         </div>
     </main>
@@ -448,7 +441,7 @@
     let currentCard = null; // The card currently in the holder
     let wrongAnswersCount = 0;
     let isGameActive = false;
-    let draggedCardData = null; // To store data of the card being dragged
+    // draggedCardData is no longer needed as currentCard directly represents the draggable item
 
     // --- DOM Elements ---
     const timelineCardsContainer = document.getElementById('timeline-cards-container');
@@ -458,6 +451,7 @@
     const resultMessage = document.getElementById('result-message');
     const resultMedal = document.getElementById('result-medal');
     const playAgainButton = document.getElementById('play-again-button');
+    const unplacedCountSpan = document.getElementById('unplaced-count');
 
     // --- Helper Functions ---
 
@@ -496,15 +490,15 @@
         const cardContent = document.createElement('div');
         cardContent.className = 'card-content';
 
-        const cardDate = document.createElement('div');
-        cardDate.className = 'card-date';
-        cardDate.textContent = formatDate(cardData.date);
+        const cardDatePill = document.createElement('span'); // New element for date pill
+        cardDatePill.className = 'card-date-pill';
+        cardDatePill.textContent = formatDate(cardData.date);
 
         const cardText = document.createElement('div');
         cardText.className = 'card-text';
         cardText.textContent = cardData.text;
 
-        cardContent.appendChild(cardDate);
+        cardContent.appendChild(cardDatePill); // Append pill first
         cardContent.appendChild(cardText);
         cardDiv.appendChild(cardImage);
         cardDiv.appendChild(cardContent);
@@ -514,7 +508,7 @@
             const statusIcon = document.createElement('i');
             statusIcon.className = 'card-status-icon fas';
             if (cardData.isCorrectlyPlaced) {
-                statusIcon.classList.add('fa-check-circle', 'correct');
+                statusIcon.classList.add('fa-check-circle', 'correct'); // Use fa-check-circle for outlined tick
             } else {
                 statusIcon.classList.add('fa-times-circle', 'incorrect');
             }
@@ -541,16 +535,15 @@
             event.preventDefault();
             return;
         }
-        draggedCardData = currentCard;
         // Set data for drag operation (optional, but good practice)
-        event.dataTransfer.setData('text/plain', JSON.stringify(draggedCardData));
+        event.dataTransfer.setData('text/plain', currentCard.id); // Just pass the ID
         // Add a class to the dragged card for visual feedback (e.g., opacity)
         event.currentTarget.classList.add('dragging');
     }
 
     function handleDragOver(event) {
         event.preventDefault(); // Necessary to allow dropping
-        if (isGameActive && draggedCardData) {
+        if (isGameActive && currentCard) { // Check if there's a card to drag
             event.currentTarget.classList.add('drag-over'); // Visual feedback for drop target
         }
     }
@@ -563,14 +556,12 @@
         event.preventDefault();
         event.currentTarget.classList.remove('drag-over'); // Remove visual feedback
 
-        if (!isGameActive || !draggedCardData) return;
+        if (!isGameActive || !currentCard) return; // Ensure there's a card to drop
 
         const insertionIndex = parseInt(event.currentTarget.getAttribute('data-index'));
         handleCardPlacement(insertionIndex);
 
-        // Reset dragged card data
-        draggedCardData = null;
-        // Remove dragging class from the card holder (if it's still there)
+        // Remove dragging class from the card holder
         const draggingCardElement = cardHolderContainer.querySelector('.card.dragging');
         if (draggingCardElement) {
             draggingCardElement.classList.remove('dragging');
@@ -632,18 +623,16 @@
     }
 
     function renderCardHolder() {
-        cardHolderContainer.innerHTML = '';
+        cardHolderContainer.querySelector('.card')?.remove(); // Remove old card if exists
         if (currentCard) {
             cardHolderContainer.appendChild(createCardElement(currentCard, true));
-        } else {
-            // Optionally hide the holder if no more cards
-            // cardHolderContainer.style.display = 'none';
         }
+        unplacedCountSpan.textContent = unplacedCards.length; // Update remaining count
     }
 
     function handleCardPlacement(insertionIndex) {
-        // Use draggedCardData instead of currentCard for placement logic
-        const cardToPlace = draggedCardData; 
+        // Use currentCard directly as it's the one being dragged
+        const cardToPlace = currentCard; 
         let actualInsertionIndex = insertionIndex; // This is where the user *tried* to place it
 
         // Determine the correct chronological position for the cardToPlace
@@ -667,7 +656,7 @@
         timelineCards.splice(actualInsertionIndex, 0, cardToPlace);
 
         // Update currentCard to the next unplaced card
-        currentCard = unplacedCards.shift() || null; // This was already handled by `draggedCardData` being `currentCard`
+        currentCard = unplacedCards.shift() || null;
 
         // Re-render the game
         renderGame();
