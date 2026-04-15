@@ -438,4 +438,311 @@
         </div>
 
         <div id="card-holder-container" class="card-holder-container">
-            <d
+            <div class="remaining-cards-count">
+                <i class="fas fa-clone"></i> <span id="unplaced-count"></span>
+            </div>
+            <!-- Current card to be placed will be rendered here by JavaScript -->
+        </div>
+    </main>
+
+    <div id="result-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="result-title"></h2>
+            <p id="result-message"></p>
+            <div id="result-medal"></div>
+            <button id="play-again-button">Play Again</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const allEvents = [
+        // You can easily modify these cards!
+        // 'date' uses new Date(year, monthIndex, day)
+        // monthIndex is 0-indexed (0 for Jan, 11 for Dec)
+        // IMPORTANT: Replace these image URLs with your own direct links!
+        // Using picsum.photos for reliable placeholders.
+        { id: 'e1', image: 'https://picsum.photos/id/237/100/100', text: 'Potatoes brought to Europe', date: new Date(1550, 6, 1), color: '#D8BFD8' }, // Mid-1500s (July 1, 1550)
+        { id: 'e2', image: 'https://picsum.photos/id/238/100/100', text: 'French potato fashion', date: new Date(1770, 0, 1), color: '#FFFF99' }, // ~1770s (Jan 1, 1770)
+        { id: 'e6', image: 'https://picsum.photos/id/239/100/100', text: 'Irish Potato Famine begins', date: new Date(1845, 8, 1), color: '#ADD8E6' }, // 1845 (Sept 1, 1845)
+        { id: 'e7', image: 'https://picsum.photos/id/240/100/100', text: 'First potato chips invented', date: new Date(1853, 7, 24), color: '#FFD700' }, // 1853 (Aug 24, 1853)
+        { id: 'e5', image: 'https://picsum.photos/id/241/100/100', text: "McDonald's adds fries to the menu", date: new Date(1949, 11, 15), color: '#FFFFFF' }, // 1949 (Dec 15, 1949 - first fries on menu)
+        { id: 'e8', image: 'https://picsum.photos/id/242/100/100', text: 'Mr. Potato Head toy released', date: new Date(1952, 4, 1), color: '#FFC0CB' }, // 1952 (May 1, 1952)
+        { id: 'e3', image: 'https://picsum.photos/id/243/100/100', text: 'Mashed Potato dance craze', date: new Date(1960, 0, 1), color: '#90EE90' }, // 1960 (Jan 1, 1960)
+        { id: 'e4', image: 'https://picsum.photos/id/244/100/100', text: 'Raisin potato salad on SNL', date: new Date(2018, 9, 27), color: '#FFB6C1' }, // 2018 (Oct 27, 2018 - SNL skit date)
+    ];
+
+    // --- Game State Variables ---
+    let correctOrder = []; // All events sorted by date
+    let timelineCards = []; // Cards currently placed on the timeline
+    let unplacedCards = []; // Cards waiting to be placed (shuffled)
+    let currentCard = null; // The card currently in the holder
+    let wrongAnswersCount = 0;
+    let isGameActive = false;
+    let isCardSelected = false; // New state for tap-to-place
+
+    // --- DOM Elements ---
+    const timelineCardsContainer = document.getElementById('timeline-cards-container');
+    const cardHolderContainer = document.getElementById('card-holder-container');
+    const resultModal = document.getElementById('result-modal');
+    const resultTitle = document.getElementById('result-title');
+    const resultMessage = document.getElementById('result-message');
+    const resultMedal = document.getElementById('result-medal');
+    const playAgainButton = document.getElementById('play-again-button');
+    const unplacedCountSpan = document.getElementById('unplaced-count');
+
+    // --- Helper Functions ---
+
+    // Shuffles an array (Fisher-Yates algorithm)
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    // Formats a Date object into a readable string (e.g., "Jan 1, 1960")
+    function formatDate(date) {
+        const options = { year: 'numeric', month: 'short', day: 'numeric' };
+        return date.toLocaleDateString('en-US', options);
+    }
+
+    // Creates a card DOM element
+    function createCardElement(cardData, isCurrentCardInHolder = false) {
+        const cardDiv = document.createElement('div');
+        cardDiv.className = 'card';
+        cardDiv.setAttribute('data-id', cardData.id);
+        cardDiv.setAttribute('data-color', cardData.color); // Set data-color for CSS styling
+
+        if (isCurrentCardInHolder) {
+            cardDiv.addEventListener('click', handleCardHolderClick); // Tap to select
+        }
+
+        const cardImage = document.createElement('img');
+        cardImage.className = 'card-image';
+        cardImage.src = cardData.image;
+        cardImage.alt = cardData.text;
+
+        const cardContent = document.createElement('div');
+        cardContent.className = 'card-content';
+
+        const cardDateBox = document.createElement('span'); // Changed to Box
+        cardDateBox.className = 'card-date-pill'; // Keeping class name for now, but it's a box
+        cardDateBox.textContent = formatDate(cardData.date);
+
+        const cardText = document.createElement('div');
+        cardText.className = 'card-text';
+        cardText.textContent = cardData.text;
+
+        cardContent.appendChild(cardDateBox);
+        cardContent.appendChild(cardText);
+        cardDiv.appendChild(cardImage);
+        cardDiv.appendChild(cardContent);
+
+        // Add status icon only if it's a placed card (not in the holder)
+        if (!isCurrentCardInHolder && cardData.isCorrectlyPlaced !== undefined) {
+            const statusIcon = document.createElement('i');
+            statusIcon.className = 'card-status-icon fas';
+            if (cardData.isCorrectlyPlaced) {
+                statusIcon.classList.add('fa-check-circle', 'correct'); // Outlined tick
+            } else {
+                statusIcon.classList.add('fa-times-circle', 'incorrect');
+            }
+            cardDiv.appendChild(statusIcon);
+        }
+
+        return cardDiv;
+    }
+
+    // Creates an insertion point DOM element
+    function createInsertionPoint(index) {
+        const insertionPoint = document.createElement('div');
+        insertionPoint.className = 'insertion-point';
+        insertionPoint.setAttribute('data-index', index); // Store index for tap target
+        insertionPoint.addEventListener('click', () => handleInsertionPointClick(index));
+        return insertionPoint;
+    }
+
+    // --- Tap-to-Place Handlers ---
+    function handleCardHolderClick() {
+        if (!isGameActive || !currentCard) return;
+
+        const cardInHolder = cardHolderContainer.querySelector('.card');
+        if (cardInHolder) {
+            isCardSelected = !isCardSelected; // Toggle selection
+            cardInHolder.classList.toggle('active', isCardSelected);
+            // Toggle active class on insertion points
+            document.querySelectorAll('.insertion-point').forEach(point => {
+                point.classList.toggle('active', isCardSelected);
+            });
+        }
+    }
+
+    function handleInsertionPointClick(insertionIndex) {
+        if (!isGameActive || !currentCard || !isCardSelected) return; // Only place if card is selected
+
+        handleCardPlacement(insertionIndex);
+
+        // Reset selection state
+        isCardSelected = false;
+        const cardInHolder = cardHolderContainer.querySelector('.card');
+        if (cardInHolder) {
+            cardInHolder.classList.remove('active');
+        }
+        document.querySelectorAll('.insertion-point').forEach(point => {
+            point.classList.remove('active');
+        });
+    }
+
+    // --- Game Logic Functions ---
+
+    function initializeGame() {
+        // Reset game state
+        wrongAnswersCount = 0;
+        timelineCards = [];
+        unplacedCards = [];
+        currentCard = null;
+        isGameActive = true;
+        isCardSelected = false; // Reset selection state
+        resultModal.style.display = 'none'; // Hide modal
+
+        // 1. Sort all events to get the correct chronological order
+        correctOrder = [...allEvents].sort((a, b) => a.date - b.date);
+
+        // 2. Place the first card on the timeline as a starting point
+        const firstCard = { ...correctOrder[0], isCorrectlyPlaced: true };
+        timelineCards.push(firstCard);
+
+        // 3. The rest of the cards are for the user to place, shuffled
+        const remainingCards = correctOrder.slice(1);
+        unplacedCards = shuffleArray(remainingCards.map(card => ({ ...card }))); // Deep copy to avoid modifying original
+
+        // 4. Set the first card to be placed
+        currentCard = unplacedCards.shift();
+
+        renderGame();
+    }
+
+    function renderGame() {
+        renderTimeline();
+        renderCardHolder();
+        checkGameEnd();
+    }
+
+    function renderTimeline() {
+        timelineCardsContainer.innerHTML = ''; // Clear existing cards and insertion points
+
+        // Add an insertion point at the very beginning
+        if (isGameActive && currentCard) {
+            timelineCardsContainer.appendChild(createInsertionPoint(0));
+        }
+
+        timelineCards.forEach((card, index) => {
+            timelineCardsContainer.appendChild(createCardElement(card));
+            // Add an insertion point after each card
+            if (isGameActive && currentCard) {
+                timelineCardsContainer.appendChild(createInsertionPoint(index + 1));
+            }
+        });
+
+        // Scroll to the bottom of the timeline to show the latest cards/insertion points
+        timelineCardsContainer.scrollTop = timelineCardsContainer.scrollHeight;
+    }
+
+    function renderCardHolder() {
+        cardHolderContainer.querySelector('.card')?.remove(); // Remove old card if exists
+        if (currentCard) {
+            cardHolderContainer.appendChild(createCardElement(currentCard, true));
+        }
+        unplacedCountSpan.textContent = unplacedCards.length; // Update remaining count
+    }
+
+    function handleCardPlacement(insertionIndex) {
+        const cardToPlace = currentCard;
+        let actualInsertionIndex = insertionIndex; // This is where the user *tried* to place it
+
+        // Determine the correct chronological position for the cardToPlace
+        let correctPositionIndex = 0;
+        while (correctPositionIndex < timelineCards.length &&
+               cardToPlace.date > timelineCards[correctPositionIndex].date) {
+            correctPositionIndex++;
+        }
+
+        // Check if the user placed it correctly
+        if (actualInsertionIndex === correctPositionIndex) {
+            cardToPlace.isCorrectlyPlaced = true;
+        } else {
+            cardToPlace.isCorrectlyPlaced = false;
+            wrongAnswersCount++;
+            // If incorrect, we'll visually place it at the correct position
+            actualInsertionIndex = correctPositionIndex;
+        }
+
+        // Insert the card into the timelineCards array
+        timelineCards.splice(actualInsertionIndex, 0, cardToPlace);
+
+        // Update currentCard to the next unplaced card
+        currentCard = unplacedCards.shift() || null;
+
+        // Re-render the game
+        renderGame();
+
+        // If the card was placed incorrectly, add a temporary class for animation
+        if (!cardToPlace.isCorrectlyPlaced) {
+            const placedCardElement = timelineCardsContainer.querySelector(`[data-id="${cardToPlace.id}"]`);
+            if (placedCardElement) {
+                placedCardElement.classList.add('incorrect');
+                setTimeout(() => {
+                    placedCardElement.classList.remove('incorrect');
+                }, 500); // Match animation duration
+            }
+        }
+    }
+
+    function checkGameEnd() {
+        if (!currentCard && unplacedCards.length === 0) {
+            isGameActive = false;
+            displayResults();
+        }
+    }
+
+    function displayResults() {
+        resultModal.style.display = 'flex'; // Show modal
+
+        let title = '';
+        let message = '';
+        let medalClass = '';
+
+        if (wrongAnswersCount === 0) {
+            title = 'Perfect Score!';
+            message = 'You got all the events in the correct order! Amazing!';
+            medalClass = 'gold fas fa-medal';
+        } else if (wrongAnswersCount === 1) {
+            title = 'Great Job!';
+            message = `You made only ${wrongAnswersCount} mistake. Almost perfect!`;
+            medalClass = 'silver fas fa-medal';
+        } else if (wrongAnswersCount === 2) {
+            title = 'Good Effort!';
+            message = `You made ${wrongAnswersCount} mistakes. Keep practicing!`;
+            medalClass = 'bronze fas fa-medal';
+        } else {
+            title = 'Nice Try!';
+            message = `You made ${wrongAnswersCount} mistakes. You'll get it next time!`;
+            medalClass = 'star fas fa-star';
+        }
+
+        resultTitle.textContent = title;
+        resultMessage.textContent = message;
+        resultMedal.className = ''; // Clear previous classes
+        resultMedal.classList.add(...medalClass.split(' ')); // Add new classes
+    }
+
+    // --- Event Listeners ---
+    playAgainButton.addEventListener('click', initializeGame);
+
+    // --- Initialize the game when the page loads ---
+    document.addEventListener('DOMContentLoaded', initializeGame);
+</script>
+</body>
+</html>
