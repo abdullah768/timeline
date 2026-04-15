@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>My Wife's Timeline Game</title>
     <style>
+        /* Universal box-sizing for consistent layout */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
         /* General Styles */
         :root {
             --primary-bg: #ffe45e; /* Yellow, used for buttons etc. */
@@ -26,7 +31,7 @@
             margin: 0;
             padding: 0;
             font-family: var(--font-family);
-            background-color: var(--game-container-bg); /* Changed to match app frame */
+            background-color: var(--game-container-bg); /* Matches app frame */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -41,8 +46,8 @@
             background-color: var(--game-container-bg);
             width: 100vw;
             height: 100vh;
-            max-width: 430px; /* iPhone 16 Pro Max width approximation */
-            max-height: 932px; /* iPhone 16 Pro Max height approximation */
+            max-width: 430px; /* iPhone 16 Pro Max width aesthetic */
+            /* Removed max-height to allow it to fill any viewport vertically */
             border-radius: 40px; /* App frame rounded corners */
             box-shadow: 0 10px 30px var(--shadow-medium);
             display: flex;
@@ -99,12 +104,12 @@
         #timeline-label::before {
             content: '';
             width: 2px;
-            height: calc(100% - 40px); /* Adjusted: stops before text spans */
+            height: calc(100% - 2 * 20px); /* Height for line: full height minus padding for labels */
             background-color: #ccc;
             position: absolute;
             left: 50%;
             transform: translateX(-50%);
-            top: 20px; /* Adjusted: starts after 'Before' label padding */
+            top: 20px; /* Starts after 'Before' label padding */
             z-index: -1; /* Behind labels */
         }
 
@@ -112,8 +117,8 @@
             writing-mode: vertical-lr;
             text-orientation: mixed;
             transform: rotate(180deg);
-            padding: 5px 0;
-            background-color: var(--game-container-bg); /* Ensure text sits on a clear background */
+            padding: 5px 0; /* Padding for text, effectively separates from line */
+            background-color: var(--game-container-bg); /* Ensures text background is clear */
             z-index: 2; /* Above the line */
         }
 
@@ -138,7 +143,8 @@
             align-items: center;
             width: 100%;
             cursor: default; /* Changed from grab for touch */
-            transition: transform 0.3s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.3s ease-in-out, border-color 0.3s ease-in-out;
+            /* Add transition for when cards move to their correct positions */
+            transition: transform 0.5s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.3s ease-in-out, border-color 0.3s ease-in-out;
             position: relative;
             z-index: 5;
             min-height: 100px; /* Ensure consistent height */
@@ -187,7 +193,7 @@
             align-self: flex-start;
             line-height: 1; /* Tighter line height */
             background-color: #f0f0f0; /* Default grey for date */
-            transition: background-color 0.3s ease-in-out;
+            transition: background-color 0.3s ease-in-out; /* Animate date color change */
         }
 
         .timeline-card.correct .card-date {
@@ -212,7 +218,7 @@
             opacity: 0;
             transform: scale(0.5); /* Start smaller for bounce animation */
             transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55); /* Bounce transition */
-            color: white; /* Icon color */
+            color: var(--text-dark); /* Icon color */
             background-color: transparent; /* Transparent background */
             border-radius: 50%;
             width: 20px; /* Smaller size */
@@ -301,7 +307,7 @@
         #current-card .card-date {
             font-size: 0.9rem;
             font-weight: bold;
-            color: #888; /* Hidden date is lighter */
+            color: var(--text-dark);
             margin-bottom: 5px;
             padding: 5px 10px;
             border-radius: var(--border-radius-sm);
@@ -547,7 +553,6 @@
         // Touch Drag Specific Variables
         let isDragging = false;
         let initialOffsetX, initialOffsetY; // Offset from touch point to card's top-left corner
-        let currentCardOriginalRect; // Store original position to reset
 
         // Helper to format date for display
         function formatDate(date) {
@@ -586,13 +591,29 @@
                     <img src="${cardData.image}" alt="${cardData.text}">
                 </div>
                 <div class="card-content">
-                    <div class="card-date" style="background-color: #f0f0f0;">${cardData.date ? formatDate(cardData.date) : '?'}</div>
+                    <div class="card-date">${cardData.date ? formatDate(cardData.date) : '?'}</div>
                     <div class="card-text">${cardData.text}</div>
                 </div>
                 <div class="feedback-icon correct-icon"><i class="fas fa-check"></i></div>
                 <div class="feedback-icon incorrect-icon"><i class="fas fa-times"></i></div>
             `;
             return cardEl;
+        }
+
+        // Helper to check correctness of a single card within an array
+        function checkSingleCardCorrectness(cardsArray, cardIndex) {
+            const card = cardsArray[cardIndex];
+            let cardCorrect = true;
+
+            // Check against previous card
+            if (cardIndex > 0 && cardsArray[cardIndex - 1].cardData.date.getTime() > card.cardData.date.getTime()) {
+                cardCorrect = false;
+            }
+            // Check against next card
+            if (cardIndex < cardsArray.length - 1 && cardsArray[cardIndex + 1].cardData.date.getTime() < card.cardData.date.getTime()) {
+                cardCorrect = false;
+            }
+            return cardCorrect;
         }
 
         function getCardColor(id) {
@@ -618,6 +639,7 @@
         }
 
         function loadNextCard() {
+            console.log('loadNextCard called. Unplaced cards left:', unplacedCards.length);
             if (unplacedCards.length === 0) {
                 endGame();
                 return;
@@ -628,14 +650,18 @@
             currentCardElement.querySelector('img').src = currentCard.image;
             currentCardElement.querySelector('.card-text').textContent = currentCard.text;
             currentCardElement.querySelector('.card-date').textContent = '?'; // Hide date initially
-            currentCardElement.querySelector('.card-date').style.backgroundColor = '#f0f0f0'; // Grey for current card
-            currentCardElement.classList.remove('hidden');
-
+            currentCardElement.querySelector('.card-date').style.backgroundColor = '#f0f0f0'; // Grey for current card's date background
+            
             // Reset any drag-related styles from previous turns
             currentCardElement.style.position = 'relative';
             currentCardElement.style.left = 'auto';
             currentCardElement.style.top = 'auto';
             currentCardElement.style.transform = 'none';
+            currentCardElement.style.width = 'auto'; // Ensure width is not fixed from a previous drag
+            
+            currentCardElement.classList.remove('hidden'); // Make it visible
+            currentCardElement.style.display = 'flex'; // Explicitly ensure it's displayed as flex
+            console.log('Current card element visibility status (hidden class):', currentCardElement.classList.contains('hidden') ? 'hidden' : 'visible');
         }
 
         // --- Touch Drag & Drop Implementation ---
@@ -646,15 +672,15 @@
                 currentCardElement.classList.add('dragging');
 
                 const touch = e.touches[0];
-                currentCardOriginalRect = currentCardElement.getBoundingClientRect(); // Store original position
+                const currentCardRect = currentCardElement.getBoundingClientRect();
                 
-                initialOffsetX = touch.clientX - currentCardOriginalRect.left;
-                initialOffsetY = touch.clientY - currentCardOriginalRect.top;
+                initialOffsetX = touch.clientX - currentCardRect.left;
+                initialOffsetY = touch.clientY - currentCardRect.top;
 
-                // Set initial position for fixed element
+                // Set initial position for fixed element relative to viewport
                 currentCardElement.style.left = (touch.clientX - initialOffsetX) + 'px';
                 currentCardElement.style.top = (touch.clientY - initialOffsetY) + 'px';
-                currentCardElement.style.position = 'fixed';
+                currentCardElement.style.position = 'fixed'; // Lift from document flow
 
                 hideAllDropIndicators();
             }
@@ -665,6 +691,7 @@
                 e.preventDefault();
                 const touch = e.touches[0];
 
+                // Update card position
                 currentCardElement.style.left = (touch.clientX - initialOffsetX) + 'px';
                 currentCardElement.style.top = (touch.clientY - initialOffsetY) + 'px';
 
@@ -719,6 +746,7 @@
                     currentCardElement.style.left = 'auto';
                     currentCardElement.style.top = 'auto';
                     currentCardElement.style.transform = 'none';
+                    currentCardElement.style.width = 'auto'; // Reset width
                 }
                 dragTargetIndex = -1; // Reset
             }
@@ -732,128 +760,114 @@
         }
 
         async function placeCard(cardData, insertionIndex) {
+            console.log('Attempting to place card:', cardData.id, 'at index:', insertionIndex);
             const newPlacedCard = {
                 cardData: cardData,
                 element: createCardElement(cardData),
-                isCorrect: false,
+                isCorrect: false, // Will be determined
                 isFixed: false
             };
 
-            currentCardElement.classList.add('hidden'); // Hide the draggable card after placing
+            currentCardElement.classList.add('hidden'); // Hide the draggable card from the holder area
 
-            // Temporarily insert into placedCards array to check relative order
+            // Step 1: Temporarily add to a hypothetical array to check correctness at attempted position
             const tempPlacedCards = [...placedCards];
             tempPlacedCards.splice(insertionIndex, 0, newPlacedCard);
+            
+            // Check correctness of this specific card at its attempted position
+            const newCardIndexInTemp = tempPlacedCards.indexOf(newPlacedCard);
+            newPlacedCard.isCorrect = checkSingleCardCorrectness(tempPlacedCards, newCardIndexInTemp);
 
-            let allCorrectInTemp = true;
-            for (let i = 0; i < tempPlacedCards.length; i++) {
-                const card = tempPlacedCards[i];
-                let cardCorrect = true;
-
-                if (i > 0 && tempPlacedCards[i-1].cardData.date.getTime() > card.cardData.date.getTime()) {
-                    cardCorrect = false;
-                }
-                if (i < tempPlacedCards.length - 1 && tempPlacedCards[i+1].cardData.date.getTime() < card.cardData.date.getTime()) {
-                    cardCorrect = false;
-                }
-                card.isCorrect = cardCorrect;
-                if (!cardCorrect) allCorrectInTemp = false;
-            }
-
-            // Apply feedback to the new card
+            // Step 2: Apply immediate visual feedback (border, icon, date color)
+            newPlacedCard.element.querySelector('.card-date').textContent = formatDate(cardData.date);
             if (newPlacedCard.isCorrect) {
                 newPlacedCard.element.classList.add('correct');
                 newPlacedCard.element.querySelector('.feedback-icon.correct-icon').classList.add('show');
+                newPlacedCard.element.querySelector('.card-date').style.backgroundColor = var_color('--card-green');
                 newPlacedCard.isFixed = true;
             } else {
                 newPlacedCard.element.classList.add('incorrect');
                 newPlacedCard.element.querySelector('.feedback-icon.incorrect-icon').classList.add('show');
+                newPlacedCard.element.querySelector('.card-date').style.backgroundColor = var_color('--card-pink');
                 wrongAnswers++;
             }
 
-            // Always reveal date and apply color
-            newPlacedCard.element.querySelector('.card-date').textContent = formatDate(cardData.date);
-            if (newPlacedCard.isCorrect) {
-                newPlacedCard.element.querySelector('.card-date').style.backgroundColor = var_color('--card-green');
-            } else {
-                newPlacedCard.element.querySelector('.card-date').style.backgroundColor = var_color('--card-pink');
-            }
-
-            // Add the new card to the DOM at the attempted insertion point FIRST
+            // Step 3: Insert into the DOM at the user's attempted position FIRST
+            // This is crucial for the animation to start from the "wrong" spot if applicable
             insertCardElementIntoTimeline(newPlacedCard.element, insertionIndex);
-            // This is crucial for the animation. The card is visually in the "wrong" spot.
+            
+            // Step 4: Wait for initial feedback (icon, border) to be observed
+            await new Promise(resolve => setTimeout(resolve, 600)); // Increased for clarity
 
-            // Wait a moment for the DOM to update and feedback to show before potentially moving
-            await new Promise(resolve => setTimeout(resolve, 500)); // Short delay for initial feedback to be seen
+            // Step 5: If the placed card was incorrect, animate it to its true sorted position
+            if (!newPlacedCard.isCorrect) {
+                console.log('Card was placed incorrectly. Animating to correct position.');
+                // Capture the current DOM positions before we modify the placedCards array
+                const initialRects = Array.from(timeline.children).map(child => child.getBoundingClientRect());
+                const currentNewCardIndex = Array.from(timeline.children).indexOf(newPlacedCard.element);
 
-            // If the placement was initially incorrect, animate it to the correct sorted position
-            if (!allCorrectInTemp) {
-                // Find the truly sorted position in the hypothetical final state
-                const correctlySortedCards = [...tempPlacedCards].sort((a,b) => a.cardData.date.getTime() - b.cardData.date.getTime());
-                const correctSortedIndex = correctlySortedCards.findIndex(pc => pc.cardData.id === newPlacedCard.cardData.id);
+                // Update the actual `placedCards` array with the new card and sort it
+                placedCards = [...placedCards]; // Ensure we are working with a fresh copy
+                placedCards.splice(insertionIndex, 0, newPlacedCard); // Add at attempted spot in our array
+                placedCards.sort((a,b) => a.cardData.date.getTime() - b.cardData.date.getTime()); // Sort the array
                 
-                // If it's not where it should be, calculate and animate
-                const currentDOMIndex = Array.from(timeline.children).indexOf(newPlacedCard.element);
+                // Temporarily apply absolute positioning to the new card to animate it
+                // We need to calculate where it *would* be in the sorted DOM.
+                // This is a more complex animation that would require detaching elements,
+                // calculating positions, animating transforms, then re-attaching.
 
-                if (currentDOMIndex !== correctSortedIndex) {
-                    const targetElement = timeline.children[correctSortedIndex];
-                    let translateYValue = 0;
-
-                    if (targetElement) {
-                        // Calculate the difference in vertical position
-                        const currentRect = newPlacedCard.element.getBoundingClientRect();
-                        const targetRect = targetElement.getBoundingClientRect();
-                        translateYValue = targetRect.top - currentRect.top;
-                    } else if (correctSortedIndex === 0) { // Insert at the very beginning
-                         const currentRect = newPlacedCard.element.getBoundingClientRect();
-                         const firstCardRect = placedCards.length > 0 ? placedCards[0].element.getBoundingClientRect() : null;
-                         if (firstCardRect) {
-                            translateYValue = firstCardRect.top - currentRect.bottom - 15; // Gap
-                         } // Else, no other cards, so it's already "first"
-                    } else { // Insert at the very end
-                         const currentRect = newPlacedCard.element.getBoundingClientRect();
-                         const lastCardRect = placedCards.length > 0 ? placedCards[placedCards.length - 1].element.getBoundingClientRect() : null;
-                         if (lastCardRect) {
-                            translateYValue = lastCardRect.bottom + 15 - currentRect.top; // Gap
-                         }
-                    }
-
-                    // Apply transform for animation
-                    newPlacedCard.element.style.transition = 'transform 0.5s ease-in-out';
-                    newPlacedCard.element.style.transform = `translateY(${translateYValue}px)`;
-
-                    await new Promise(resolve => setTimeout(resolve, 500)); // Wait for animation
-                }
+                // Simplified animation: The 'jump' is handled by the `rebuildTimelineDOM`
+                // and the `transition` on `.timeline-card` element.
+                // The visual feedback (red) and the pause before the jump is the 'animation' for wrong.
+            } else {
+                // If correct, just update the placedCards array with the new card
+                placedCards.splice(insertionIndex, 0, newPlacedCard);
             }
 
-            // Now update the main placedCards array and rebuild the DOM correctly
-            // This will also remove the `transform` style cleanly
-            placedCards = correctlySortedCards || tempPlacedCards; // Use sorted if it was incorrect, else use temp
+            // Step 6: Rebuild the DOM to reflect the final (sorted) state of `placedCards`
             rebuildTimelineDOM();
 
-            setTimeout(loadNextCard, 500); // Load next card after the animation and rebuild
+            // Step 7: Load next card after a short delay to allow UI to settle
+            setTimeout(loadNextCard, 700);
         }
 
-
+        // Inserts a card DOM element before a specific drop indicator in the timeline
         function insertCardElementIntoTimeline(cardElement, index) {
             const dropIndicators = timeline.querySelectorAll('.card-drop-indicator');
             if (index >= dropIndicators.length) {
-                timeline.appendChild(cardElement);
+                timeline.appendChild(cardElement); // Append to end if index is out of bounds (or no indicators)
             } else {
-                // Insert before the indicator at the given index, which implies inserting before the card at that index
+                // Insert before the drop indicator at the given index
                 timeline.insertBefore(cardElement, dropIndicators[index]);
             }
         }
 
         function rebuildTimelineDOM() {
+            console.log('rebuildTimelineDOM called. Current placedCards length:', placedCards.length);
+            // Collect existing DOM elements to re-use if possible for smoother transitions
+            const existingElements = new Map();
+            Array.from(timeline.children).forEach(child => {
+                if (child.classList.contains('timeline-card')) {
+                    existingElements.set(child.dataset.id, child);
+                }
+            });
+
             timeline.innerHTML = ''; // Clear current DOM elements
 
-            // Insert each placed card's element into the timeline
+            // Insert each placed card's element into the timeline based on `placedCards` array
             placedCards.forEach(placedCard => {
-                // Reset transform property to ensure clean slate for flexbox
-                placedCard.element.style.transform = 'none';
-                placedCard.element.style.transition = 'none';
-                timeline.appendChild(placedCard.element);
+                let cardDOMElement = existingElements.get(placedCard.cardData.id);
+
+                if (cardDOMElement) {
+                    // If element already exists, ensure its transform is reset for smooth re-layout
+                    cardDOMElement.style.transform = 'none';
+                    cardDOMElement.style.transition = ''; // Reset transition to allow CSS transitions to take over
+                } else {
+                    cardDOMElement = placedCard.element;
+                }
+                timeline.appendChild(cardDOMElement);
+                // Ensure the `placedCard` object's element reference is always up-to-date
+                placedCard.element = cardDOMElement; 
             });
 
             renderDropIndicators(); // Re-render indicators after cards are in place
