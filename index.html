@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Timeline Puzzle for My Love!</title>
+    <!-- Favicon to prevent 404 error -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥔</text></svg>">
     <!-- Font Awesome for tick/cross icons and header icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -94,9 +96,9 @@
         .play-puzzle-banner {
             background-color: var(--card-bg-light);
             border-radius: 2.5vh;
-            padding: 2.5vh 6vw;
+            padding: 1.5vh 4vw; /* Adjusted for more compact look */
             box-shadow: 0 4px 10px var(--card-shadow);
-            font-size: 3.2vh;
+            font-size: 2.5vh;   /* Adjusted for more compact look */
             font-weight: 600;
             color: var(--header-text-color);
             text-align: center;
@@ -418,15 +420,15 @@
         // You can easily modify these cards!
         // 'date' uses new Date(year, monthIndex, day)
         // monthIndex is 0-indexed (0 for Jan, 11 for Dec)
-        // IMPORTANT: Replace these image URLs with your own direct links!
-        { id: 'e1', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Potato_plant_illustration.jpg/640px-Potato_plant_illustration.jpg', text: 'Potatoes brought to Europe', date: new Date(1550, 6, 1), color: '#D8BFD8' }, // Mid-1500s (July 1, 1550)
-        { id: 'e2', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Marie_Antoinette_with_potato_flowers_in_her_hair.jpg/640px-Marie_Antoinette_with_potato_flowers_in_her_hair.jpg', text: 'French potato fashion', date: new Date(1770, 0, 1), color: '#FFFF99' }, // ~1770s (Jan 1, 1770)
-        { id: 'e6', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/The_Irish_Famine_at_Skibbereen.jpg/640px-The_Irish_Famine_at_Skibbereen.jpg', text: 'Irish Potato Famine begins', date: new Date(1845, 8, 1), color: '#ADD8E6' }, // 1845 (Sept 1, 1845)
-        { id: 'e7', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Potato_chips_in_a_bowl.jpg/640px-Potato_chips_in_a_bowl.jpg', text: 'First potato chips invented', date: new Date(1853, 7, 24), color: '#FFD700' }, // 1853 (Aug 24, 1853)
-        { id: 'e5', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/McDonald%27s_French_Fries.jpg/640px-McDonald%27s_French_Fries.jpg', text: "McDonald's adds fries to the menu", date: new Date(1949, 11, 15), color: '#FFFFFF' }, // 1949 (Dec 15, 1949 - first fries on menu)
-        { id: 'e8', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Mr._Potato_Head_toy.jpg/640px-Mr._Potato_Head_toy.jpg', text: 'Mr. Potato Head toy released', date: new Date(1952, 4, 1), color: '#FFC0CB' }, // 1952 (May 1, 1952)
-        { id: 'e3', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Dee_Dee_Sharp_1962.jpg/640px-Dee_Dee_Sharp_1962.jpg', text: 'Mashed Potato dance craze', date: new Date(1960, 0, 1), color: '#90EE90' }, // 1960 (Jan 1, 1960)
-        { id: 'e4', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Pete_Davidson_2018.jpg/640px-Pete_Davidson_2018.jpg', text: 'Raisin potato salad on SNL', date: new Date(2018, 9, 27), color: '#FFB6C1' }, // 2018 (Oct 27, 2018 - SNL skit date)
+        // IMPORTANT: These image URLs have been updated to direct, full-resolution Wikimedia links for better reliability.
+        { id: 'e1', image: 'https://upload.wikimedia.org/wikipedia/commons/c/c1/Potato_plant_illustration.jpg', text: 'Potatoes brought to Europe', date: new Date(1550, 6, 1), color: '#D8BFD8' }, // Mid-1500s (July 1, 1550)
+        { id: 'e2', image: 'https://upload.wikimedia.org/wikipedia/commons/a/a2/Marie_Antoinette_with_potato_flowers_in_her_hair.jpg', text: 'French potato fashion', date: new Date(1770, 0, 1), color: '#FFFF99' }, // ~1770s (Jan 1, 1770)
+        { id: 'e6', image: 'https://upload.wikimedia.org/wikipedia/commons/d/d7/The_Irish_Famine_at_Skibbereen.jpg', text: 'Irish Potato Famine begins', date: new Date(1845, 8, 1), color: '#ADD8E6' }, // 1845 (Sept 1, 1845)
+        { id: 'e7', image: 'https://upload.wikimedia.org/wikipedia/commons/6/60/Potato_chips_in_a_bowl.jpg', text: 'First potato chips invented', date: new Date(1853, 7, 24), color: '#FFD700' }, // 1853 (Aug 24, 1853)
+        { id: 'e5', image: 'https://upload.wikimedia.org/wikipedia/commons/a/a7/McDonald%27s_French_Fries.jpg', text: "McDonald's adds fries to the menu", date: new Date(1949, 11, 15), color: '#FFFFFF' }, // 1949 (Dec 15, 1949 - first fries on menu)
+        { id: 'e8', image: 'https://upload.wikimedia.org/wikipedia/commons/f/f6/Mr._Potato_Head_toy.jpg', text: 'Mr. Potato Head toy released', date: new Date(1952, 4, 1), color: '#FFC0CB' }, // 1952 (May 1, 1952)
+        { id: 'e3', image: 'https://upload.wikimedia.org/wikipedia/commons/b/b5/Dee_Dee_Sharp_1962.jpg', text: 'Mashed Potato dance craze', date: new Date(1960, 0, 1), color: '#90EE90' }, // 1960 (Jan 1, 1960)
+        { id: 'e4', image: 'https://upload.wikimedia.org/wikipedia/commons/a/a2/Pete_Davidson_2018.jpg', text: 'Raisin potato salad on SNL', date: new Date(2018, 9, 27), color: '#FFB6C1' }, // 2018 (Oct 27, 2018 - SNL skit date)
     ];
 
     // --- Game State Variables ---
