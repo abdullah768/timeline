@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Timeline Challenge</title>
+    <title>Happy Anniversary!</title>
     <style>
         :root {
             --primary-bg: #ffe45e;
@@ -11,7 +11,7 @@
             --card-green: #90d8a5;
             --card-pink: #f4a5b4;
             --card-white: #ffffff;
-            --text-dark: #333333;
+            --text-dark: #1a1a1a;
             --shadow: rgba(0, 0, 0, 0.1);
             --app-height: 100vh;
         }
@@ -79,7 +79,7 @@
         }
 
         .card-slot {
-            overflow: visible; /* Changed to visible so shadows aren't clipped */
+            overflow: visible;
             transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             align-items: center;
@@ -138,19 +138,13 @@
 
         .dragging { opacity: 0.9; transform: scale(1.05); z-index: 5000; position: fixed !important; pointer-events: none; }
 
-        /* Elevation for wrong answer sliding */
         .elevated {
             z-index: 9999 !important;
             box-shadow: 0 20px 40px rgba(0,0,0,0.3) !important;
         }
 
         /* --- FEEDBACK --- */
-        .card-drop-indicator {
-            height: 0px; 
-            width: 100%; 
-            transition: height 0.3s;
-            position: relative;
-        }
+        .card-drop-indicator { height: 0px; width: 100%; transition: height 0.3s; position: relative; }
         .card-drop-indicator.show { height: 10px; }
         .card-drop-indicator::after {
             content: ''; position: absolute; top: 3px; left: 0; right: 0; height: 4px;
@@ -163,54 +157,81 @@
         .incorrect { border-color: var(--card-pink); }
         .incorrect .date-badge { background: var(--card-pink); }
 
-        /* --- END GAME --- */
+        /* --- END GAME (MODAL) --- */
         #end-modal {
             position: fixed; inset: 0;
-            background: #fdfaf3; z-index: 10000;
+            background: #f1f0e8; z-index: 10000;
             display: none; flex-direction: column;
-            align-items: center; justify-content: center;
-            padding: 40px; text-align: center;
+            align-items: center; justify-content: flex-start;
+            padding: 60px 40px; text-align: center;
         }
 
-        .medal-wrapper { position: relative; margin-bottom: 50px; height: 160px; display: flex; align-items: center; justify-content: center; }
-
-        .medal-ribbon {
-            width: 55px; height: 95px;
-            background: #e35d5d; position: absolute;
-            top: -15px; left: 50%; transform: translateX(-50%);
-            clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 50% 80%, 0% 100%);
-            z-index: 1; border: 2px solid rgba(0,0,0,0.1);
+        #end-anniversary {
+            font-size: 1.6rem; font-weight: 800; color: #333; margin-bottom: 40px;
         }
 
-        .medal-circle {
-            width: 115px; height: 115px;
-            border-radius: 50%; border: 6px solid #fff;
-            position: relative; z-index: 2;
+        /* --- ILLUSTRATIVE MEDALS --- */
+        .medal-box {
+            width: 220px; height: 260px;
+            position: relative; display: flex; flex-direction: column; align-items: center;
+            margin-bottom: 30px;
+        }
+
+        /* The Ribbon (Striped) */
+        .ribbon {
+            width: 80px; height: 100px;
+            background: #f26d21; /* Base Orange */
+            background-image: linear-gradient(90deg, transparent 25%, white 25%, white 40%, transparent 40%, transparent 60%, white 60%, white 75%, transparent 75%);
+            position: absolute; top: 0; z-index: 1;
+            clip-path: polygon(15% 0, 85% 0, 100% 100%, 50% 85%, 0 100%);
+            border: 4px solid #1a1a1a;
+        }
+        .ribbon-silver { background-color: #4caf50; } /* Green ribbon for bronze/silver look */
+
+        /* The Medal Circle */
+        .medal-body {
+            width: 160px; height: 160px;
+            border-radius: 50%; border: 8px solid #1a1a1a;
+            position: absolute; bottom: 0; z-index: 2;
             display: flex; align-items: center; justify-content: center;
-            font-size: 3.5rem; font-weight: 900; color: white;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            box-shadow: 6px 6px 0px rgba(0,0,0,0.1);
         }
 
-        .gold-medal { background: linear-gradient(135deg, #ffd700, #b8860b); }
-        .silver-medal { background: linear-gradient(135deg, #e0e0e0, #888); }
-        .bronze-medal { background: linear-gradient(135deg, #cd7f32, #804a16); }
-        
-        .star-shape {
-            width: 135px; height: 135px;
-            background: #ffc107;
-            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 3rem; color: white; font-weight: 900;
-            box-shadow: 0 0 30px rgba(255, 193, 7, 0.4);
-            padding-top: 5px;
+        .gold-body { background: #fbb03b; border-color: #1a1a1a; }
+        .silver-body { background: #e6e6e6; }
+        .bronze-body { background: #d78150; }
+
+        /* Inner Ring */
+        .medal-body::before {
+            content: ''; position: absolute; width: 120px; height: 120px;
+            border-radius: 50%; border: 4px solid rgba(0,0,0,0.1);
         }
+
+        .medal-number {
+            font-size: 6rem; font-weight: 900; color: #1a1a1a; z-index: 3;
+            margin-top: -10px; opacity: 0.8;
+        }
+
+        /* Laurels (simplified) */
+        .laurel {
+            position: absolute; width: 30px; height: 60px;
+            border-left: 4px solid rgba(0,0,0,0.1);
+            border-bottom: 4px solid rgba(0,0,0,0.1);
+            border-radius: 0 0 0 20px;
+            bottom: 35px; left: 30px; transform: rotate(-15deg);
+        }
+        .laurel-right { left: auto; right: 30px; transform: scaleX(-1) rotate(-15deg); }
+
+        #end-status { font-size: 2.5rem; font-weight: 900; color: #1a1a1a; margin-bottom: 10px; }
+        #accuracy-stats { font-size: 1.1rem; color: #666; font-weight: 600; margin-bottom: 50px; }
 
         .btn-restart {
             padding: 18px 60px; border-radius: 40px;
-            border: none; background: #333;
-            color: white; font-size: 1.1rem; font-weight: bold;
-            cursor: pointer; transition: transform 0.2s;
+            border: 4px solid #1a1a1a; background: white;
+            color: #1a1a1a; font-size: 1.2rem; font-weight: 900;
+            cursor: pointer; box-shadow: 4px 4px 0px #1a1a1a;
         }
+        .btn-restart:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0px #1a1a1a; }
     </style>
 </head>
 <body>
@@ -240,12 +261,18 @@
         </div>
     </div>
 
+    <!-- END GAME SCREEN -->
     <div id="end-modal">
-        <h1 style="margin-bottom: 5px; font-weight: 900; color: #d63384;">Happy Anniversary!</h1>
-        <div class="medal-wrapper" id="medal-slot"></div>
-        <h2 id="rank-name" style="margin: 5px 0;">Rank</h2>
-        <p class="stats" id="accuracy-stats" style="color: #888; margin-bottom: 30px;"></p>
-        <button class="btn-restart" onclick="location.reload()">Play Again</button>
+        <div id="end-anniversary">Happy Anniversary</div>
+        
+        <div class="medal-box" id="medal-slot">
+            <!-- Dynamic Content -->
+        </div>
+
+        <div id="end-status">Perfect!</div>
+        <div id="accuracy-stats">Accuracy: 100%</div>
+        
+        <button class="btn-restart" onclick="location.reload()">PLAY AGAIN</button>
     </div>
 </div>
 
@@ -256,18 +283,22 @@
         { id: 3, date: new Date(1770, 0, 1), text: "French potato fashion (Marie Antoinette)", img: "https://picsum.photos/id/1083/150/150" },
         { id: 4, date: new Date(1879, 0, 1), text: "Edison's practical light bulb", img: "https://picsum.photos/id/166/150/150" },
         { id: 5, date: new Date(1949, 0, 1), text: "McDonald's adds fries to the menu", img: "https://picsum.photos/id/1084/150/150" },
-        //{ id: 6, date: new Date(1960, 0, 1), text: "Mashed Potato dance craze", img: "https://picsum.photos/id/1042/150/150" },
-        //{ id: 7, date: new Date(1969, 6, 20), text: "Apollo 11 Moon landing", img: "https://picsum.photos/id/1049/150/150" },
-        //{ id: 8, date: new Date(1969, 9, 29), text: "ARPANET (early internet) created", img: "https://picsum.photos/id/972/150/150" },
-        //{ id: 9, date: new Date(1976, 3, 1), text: "Apple Inc. founded", img: "https://picsum.photos/id/145/150/150" },
-        //{ id: 10, date: new Date(1989, 10, 9), text: "Fall of the Berlin Wall", img: "https://picsum.photos/id/141/150/150" },
-        //{ id: 11, date: new Date(2007, 0, 9), text: "First iPhone released", img: "https://picsum.photos/id/345/150/150" },
-        //{ id: 12, date: new Date(2018, 0, 1), text: "Raisin potato salad viral on SNL", img: "https://picsum.photos/id/1063/150/150" }
+        { id: 6, date: new Date(1960, 0, 1), text: "Mashed Potato dance craze", img: "https://picsum.photos/id/1042/150/150" },
+        { id: 7, date: new Date(1969, 6, 20), text: "Apollo 11 Moon landing", img: "https://picsum.photos/id/1049/150/150" },
+        
+        /* Commented out for simplicity 
+        { id: 8, date: new Date(1969, 9, 29), text: "ARPANET (early internet) created", img: "https://picsum.photos/id/972/150/150" },
+        { id: 9, date: new Date(1976, 3, 1), text: "Apple Inc. founded", img: "https://picsum.photos/id/145/150/150" },
+        { id: 10, date: new Date(1989, 10, 9), text: "Fall of the Berlin Wall", img: "https://picsum.photos/id/141/150/150" },
+        { id: 11, date: new Date(2007, 0, 9), text: "First iPhone released", img: "https://picsum.photos/id/345/150/150" },
+        { id: 12, date: new Date(2018, 0, 1), text: "Raisin potato salad viral on SNL", img: "https://picsum.photos/id/1063/150/150" }
+        */
     ];
 
     let unplaced = [];
     let placed = [];
     let mistakes = 0;
+    let totalRounds = 0;
     let isDragging = false;
     let currentDragIndex = -1;
     let initialX, initialY;
@@ -284,6 +315,7 @@
 
     function init() {
         unplaced = [...cardsData].sort(() => Math.random() - 0.5);
+        totalRounds = unplaced.length - 1; 
         const seed = unplaced.shift();
         const seedEl = createCardEl(seed);
         seedEl.classList.add('correct');
@@ -393,28 +425,21 @@
         } else {
             mistakes++;
             cardEl.classList.add('incorrect');
-            
             const indicators = document.querySelectorAll('.card-drop-indicator');
             const dummySlot = document.createElement('div');
             dummySlot.className = 'card-slot';
             dummySlot.style.height = '115px';
             dummySlot.appendChild(cardEl);
             timeline.insertBefore(dummySlot, indicators[index]);
-            
             await new Promise(r => setTimeout(r, 1200));
-
             const firstRect = cardEl.getBoundingClientRect();
             placed.push({ data, el: cardEl });
             placed.sort((a, b) => a.data.date - b.data.date);
             renderTimeline(false);
-
             const lastRect = cardEl.getBoundingClientRect();
             const deltaY = firstRect.top - lastRect.top;
-
-            // TRACKING CAMERA
             let startTime = null;
             const duration = 1800;
-
             function step(timestamp) {
                 if (!startTime) startTime = timestamp;
                 const progress = (timestamp - startTime) / duration;
@@ -423,20 +448,14 @@
                     requestAnimationFrame(step);
                 }
             }
-
-            // ELEVATE LAYER: Bring to top and add shadow
             cardEl.classList.add('elevated');
-
             cardEl.style.transition = 'none';
             cardEl.style.transform = `translateY(${deltaY}px)`;
             cardEl.offsetHeight; 
-            
             cardEl.style.transition = 'transform 1.8s cubic-bezier(0.45, 0, 0.55, 1)';
             cardEl.style.transform = 'translateY(0)';
-
             requestAnimationFrame(step);
             await new Promise(r => setTimeout(r, 1900));
-            
             cardEl.classList.remove('elevated');
             nextCard();
         }
@@ -458,26 +477,49 @@
     function endGame() {
         const modal = document.getElementById('end-modal');
         const slot = document.getElementById('medal-slot');
-        const rank = document.getElementById('rank-name');
+        const statusText = document.getElementById('end-status');
         const stats = document.getElementById('accuracy-stats');
         
-        let medalHtml = '';
+        let medalClass = 'gold-body';
+        let ribbonClass = '';
+        let number = '1';
+        let status = 'Perfect!';
+
         if (mistakes <= 1) {
-            medalHtml = '<div class="medal-ribbon"></div><div class="medal-circle gold-medal">1</div>';
-            rank.textContent = "Gold Rank";
+            medalClass = 'gold-body';
+            number = '1';
+            status = 'Perfect!';
         } else if (mistakes <= 3) {
-            medalHtml = '<div class="medal-ribbon"></div><div class="medal-circle silver-medal">2</div>';
-            rank.textContent = "Silver Rank";
+            medalClass = 'silver-body';
+            ribbonClass = 'ribbon-silver';
+            number = '2';
+            status = 'Great Job!';
         } else if (mistakes <= 5) {
-            medalHtml = '<div class="medal-ribbon"></div><div class="medal-circle bronze-medal">3</div>';
-            rank.textContent = "Bronze Rank";
+            medalClass = 'bronze-body';
+            ribbonClass = 'ribbon-silver';
+            number = '3';
+            status = 'Nice!';
         } else {
-            medalHtml = '<div class="star-shape">4</div>';
-            rank.textContent = "Star Rank";
+            // Star logic
+            slot.innerHTML = `<div class="star-shape">4</div>`;
+            statusText.textContent = "Keep Going!";
+            stats.textContent = `Mistakes: ${mistakes}`;
+            modal.style.display = 'flex';
+            return;
         }
 
-        slot.innerHTML = medalHtml;
-        stats.textContent = `Mistakes: ${mistakes} | Accuracy: ${Math.round(((12-mistakes)/12)*100)}%`;
+        slot.innerHTML = `
+            <div class="ribbon ${ribbonClass}"></div>
+            <div class="medal-body ${medalClass}">
+                <div class="laurel"></div>
+                <div class="laurel laurel-right"></div>
+                <div class="medal-number">${number}</div>
+            </div>
+        `;
+
+        statusText.textContent = status;
+        const accuracy = Math.round(((totalRounds - mistakes) / totalRounds) * 100);
+        stats.textContent = `Accuracy: ${Math.max(0, accuracy)}%`;
         modal.style.display = 'flex';
     }
 
