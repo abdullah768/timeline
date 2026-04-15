@@ -21,6 +21,7 @@
             --incorrect-color: #dc3545;
             --modal-bg: rgba(0, 0, 0, 0.6);
             --modal-content-bg: #fff;
+            --drag-over-color: #007bff; /* Color for drag-over effect */
         }
 
         /* Base styles for iPhone 16 Pro Max */
@@ -250,9 +251,10 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            cursor: pointer;
+            cursor: grab; /* Indicate draggable target */
             position: relative;
             z-index: 2; /* Above timeline line */
+            transition: background-color 0.2s ease-in-out;
         }
 
         .insertion-point::before {
@@ -264,11 +266,17 @@
             background-color: var(--insertion-point-color);
             border-radius: 50%;
             opacity: 0.7;
-            transition: opacity 0.2s ease-in-out;
+            transition: opacity 0.2s ease-in-out, background-color 0.2s ease-in-out;
         }
 
         .insertion-point:hover::before {
             opacity: 1;
+        }
+
+        .insertion-point.drag-over::before {
+            background-color: var(--drag-over-color);
+            opacity: 1;
+            transform: scale(1.2); /* Make it slightly larger on drag-over */
         }
 
         /* Card Holder */
@@ -288,6 +296,7 @@
             width: 90%; /* Make the card in holder a bit wider */
             max-width: 90vw;
             box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+            cursor: grab; /* Indicate draggable */
         }
 
         /* Modal Styles */
@@ -420,15 +429,16 @@
         // You can easily modify these cards!
         // 'date' uses new Date(year, monthIndex, day)
         // monthIndex is 0-indexed (0 for Jan, 11 for Dec)
-        // IMPORTANT: These image URLs have been updated to direct, full-resolution Wikimedia links for better reliability.
-        { id: 'e1', image: 'https://upload.wikimedia.org/wikipedia/commons/c/c1/Potato_plant_illustration.jpg', text: 'Potatoes brought to Europe', date: new Date(1550, 6, 1), color: '#D8BFD8' }, // Mid-1500s (July 1, 1550)
-        { id: 'e2', image: 'https://upload.wikimedia.org/wikipedia/commons/a/a2/Marie_Antoinette_with_potato_flowers_in_her_hair.jpg', text: 'French potato fashion', date: new Date(1770, 0, 1), color: '#FFFF99' }, // ~1770s (Jan 1, 1770)
-        { id: 'e6', image: 'https://upload.wikimedia.org/wikipedia/commons/d/d7/The_Irish_Famine_at_Skibbereen.jpg', text: 'Irish Potato Famine begins', date: new Date(1845, 8, 1), color: '#ADD8E6' }, // 1845 (Sept 1, 1845)
-        { id: 'e7', image: 'https://upload.wikimedia.org/wikipedia/commons/6/60/Potato_chips_in_a_bowl.jpg', text: 'First potato chips invented', date: new Date(1853, 7, 24), color: '#FFD700' }, // 1853 (Aug 24, 1853)
-        { id: 'e5', image: 'https://upload.wikimedia.org/wikipedia/commons/a/a7/McDonald%27s_French_Fries.jpg', text: "McDonald's adds fries to the menu", date: new Date(1949, 11, 15), color: '#FFFFFF' }, // 1949 (Dec 15, 1949 - first fries on menu)
-        { id: 'e8', image: 'https://upload.wikimedia.org/wikipedia/commons/f/f6/Mr._Potato_Head_toy.jpg', text: 'Mr. Potato Head toy released', date: new Date(1952, 4, 1), color: '#FFC0CB' }, // 1952 (May 1, 1952)
-        { id: 'e3', image: 'https://upload.wikimedia.org/wikipedia/commons/b/b5/Dee_Dee_Sharp_1962.jpg', text: 'Mashed Potato dance craze', date: new Date(1960, 0, 1), color: '#90EE90' }, // 1960 (Jan 1, 1960)
-        { id: 'e4', image: 'https://upload.wikimedia.org/wikipedia/commons/a/a2/Pete_Davidson_2018.jpg', text: 'Raisin potato salad on SNL', date: new Date(2018, 9, 27), color: '#FFB6C1' }, // 2018 (Oct 27, 2018 - SNL skit date)
+        // IMPORTANT: Replace these image URLs with your own direct links!
+        // Using picsum.photos for reliable placeholders.
+        { id: 'e1', image: 'https://picsum.photos/id/237/100/100', text: 'Potatoes brought to Europe', date: new Date(1550, 6, 1), color: '#D8BFD8' }, // Mid-1500s (July 1, 1550)
+        { id: 'e2', image: 'https://picsum.photos/id/238/100/100', text: 'French potato fashion', date: new Date(1770, 0, 1), color: '#FFFF99' }, // ~1770s (Jan 1, 1770)
+        { id: 'e6', image: 'https://picsum.photos/id/239/100/100', text: 'Irish Potato Famine begins', date: new Date(1845, 8, 1), color: '#ADD8E6' }, // 1845 (Sept 1, 1845)
+        { id: 'e7', image: 'https://picsum.photos/id/240/100/100', text: 'First potato chips invented', date: new Date(1853, 7, 24), color: '#FFD700' }, // 1853 (Aug 24, 1853)
+        { id: 'e5', image: 'https://picsum.photos/id/241/100/100', text: "McDonald's adds fries to the menu", date: new Date(1949, 11, 15), color: '#FFFFFF' }, // 1949 (Dec 15, 1949 - first fries on menu)
+        { id: 'e8', image: 'https://picsum.photos/id/242/100/100', text: 'Mr. Potato Head toy released', date: new Date(1952, 4, 1), color: '#FFC0CB' }, // 1952 (May 1, 1952)
+        { id: 'e3', image: 'https://picsum.photos/id/243/100/100', text: 'Mashed Potato dance craze', date: new Date(1960, 0, 1), color: '#90EE90' }, // 1960 (Jan 1, 1960)
+        { id: 'e4', image: 'https://picsum.photos/id/244/100/100', text: 'Raisin potato salad on SNL', date: new Date(2018, 9, 27), color: '#FFB6C1' }, // 2018 (Oct 27, 2018 - SNL skit date)
     ];
 
     // --- Game State Variables ---
@@ -438,6 +448,7 @@
     let currentCard = null; // The card currently in the holder
     let wrongAnswersCount = 0;
     let isGameActive = false;
+    let draggedCardData = null; // To store data of the card being dragged
 
     // --- DOM Elements ---
     const timelineCardsContainer = document.getElementById('timeline-cards-container');
@@ -471,6 +482,11 @@
         cardDiv.className = 'card';
         cardDiv.setAttribute('data-id', cardData.id);
         cardDiv.setAttribute('data-color', cardData.color); // Set data-color for CSS styling
+
+        if (isCurrentCardInHolder) {
+            cardDiv.setAttribute('draggable', 'true'); // Make the card in holder draggable
+            cardDiv.addEventListener('dragstart', handleDragStart);
+        }
 
         const cardImage = document.createElement('img');
         cardImage.className = 'card-image';
@@ -512,8 +528,53 @@
     function createInsertionPoint(index) {
         const insertionPoint = document.createElement('div');
         insertionPoint.className = 'insertion-point';
-        insertionPoint.addEventListener('click', () => handleCardPlacement(index));
+        insertionPoint.setAttribute('data-index', index); // Store index for drop target
+        insertionPoint.addEventListener('dragover', handleDragOver);
+        insertionPoint.addEventListener('dragleave', handleDragLeave);
+        insertionPoint.addEventListener('drop', handleDrop);
         return insertionPoint;
+    }
+
+    // --- Drag and Drop Handlers ---
+    function handleDragStart(event) {
+        if (!isGameActive || !currentCard) {
+            event.preventDefault();
+            return;
+        }
+        draggedCardData = currentCard;
+        // Set data for drag operation (optional, but good practice)
+        event.dataTransfer.setData('text/plain', JSON.stringify(draggedCardData));
+        // Add a class to the dragged card for visual feedback (e.g., opacity)
+        event.currentTarget.classList.add('dragging');
+    }
+
+    function handleDragOver(event) {
+        event.preventDefault(); // Necessary to allow dropping
+        if (isGameActive && draggedCardData) {
+            event.currentTarget.classList.add('drag-over'); // Visual feedback for drop target
+        }
+    }
+
+    function handleDragLeave(event) {
+        event.currentTarget.classList.remove('drag-over');
+    }
+
+    function handleDrop(event) {
+        event.preventDefault();
+        event.currentTarget.classList.remove('drag-over'); // Remove visual feedback
+
+        if (!isGameActive || !draggedCardData) return;
+
+        const insertionIndex = parseInt(event.currentTarget.getAttribute('data-index'));
+        handleCardPlacement(insertionIndex);
+
+        // Reset dragged card data
+        draggedCardData = null;
+        // Remove dragging class from the card holder (if it's still there)
+        const draggingCardElement = cardHolderContainer.querySelector('.card.dragging');
+        if (draggingCardElement) {
+            draggingCardElement.classList.remove('dragging');
+        }
     }
 
     // --- Game Logic Functions ---
@@ -581,9 +642,8 @@
     }
 
     function handleCardPlacement(insertionIndex) {
-        if (!isGameActive || !currentCard) return;
-
-        const cardToPlace = currentCard;
+        // Use draggedCardData instead of currentCard for placement logic
+        const cardToPlace = draggedCardData; 
         let actualInsertionIndex = insertionIndex; // This is where the user *tried* to place it
 
         // Determine the correct chronological position for the cardToPlace
@@ -607,7 +667,7 @@
         timelineCards.splice(actualInsertionIndex, 0, cardToPlace);
 
         // Update currentCard to the next unplaced card
-        currentCard = unplacedCards.shift() || null;
+        currentCard = unplacedCards.shift() || null; // This was already handled by `draggedCardData` being `currentCard`
 
         // Re-render the game
         renderGame();
@@ -659,7 +719,7 @@
         resultTitle.textContent = title;
         resultMessage.textContent = message;
         resultMedal.className = ''; // Clear previous classes
-        resultMedal.classList.add(medalClass.split(' ')[0], medalClass.split(' ')[1], medalClass.split(' ')[2]); // Add new classes
+        resultMedal.classList.add(...medalClass.split(' ')); // Add new classes
     }
 
     // --- Event Listeners ---
