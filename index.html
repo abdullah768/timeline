@@ -25,6 +25,7 @@
             --border-radius-card: 15px;
             --border-radius-sm: 8px;
             --font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            --app-height: 100vh; /* Fallback height, will be set by JS */
         }
 
         body {
@@ -39,15 +40,13 @@
             overflow: hidden; /* Prevent body scroll */
             user-select: none; /* Disable text selection */
             -webkit-user-select: none; /* For iOS */
-            touch-action: pan-y; /* Allow vertical scrolling by default, but drag will override */
         }
 
         #game-container {
             background-color: var(--game-container-bg);
             width: 100vw;
-            height: 100vh;
+            height: var(--app-height); /* Use dynamic height */
             max-width: 430px; /* iPhone 16 Pro Max width aesthetic */
-            /* Removed max-height to allow it to fill any viewport vertically */
             border-radius: 40px; /* App frame rounded corners */
             box-shadow: 0 10px 30px var(--shadow-medium);
             display: flex;
@@ -545,21 +544,29 @@
         const timelineWrapper = document.getElementById('timeline-wrapper');
 
         let unplacedCards = [];
-        let placedCards = []; // Stores objects: { cardData: {...}, element: DOM_ELEMENT, isCorrect: boolean, isFixed: boolean }
+        let placedCards = []; // Stores objects: { cardData: {...}, element: DOM_ELEMENT }
         let currentCard = null;
         let wrongAnswers = 0;
         let dragTargetIndex = -1; // The index in placedCards array where the current card would be inserted
 
-        // Touch Drag Specific Variables
+        // Touch Drag & Scroll Variables
         let isDragging = false;
-        let initialOffsetX, initialOffsetY; // Offset from touch point to card's top-left corner
+        let initialOffsetX, initialOffsetY;
+        let scrollInterval = null; // To manage the auto-scroll interval
 
-        // Helper to format date for display
+        // --- Viewport Height Management ---
+        const setAppHeight = () => {
+            const doc = document.documentElement;
+            doc.style.setProperty('--app-height', `${window.innerHeight}px`);
+        };
+        window.addEventListener('resize', setAppHeight);
+        setAppHeight(); // Set initial height
+
+        // --- Core Game Logic ---
         function formatDate(date) {
             return date.toLocaleString('en-US', { year: 'numeric', month: 'short' });
         }
 
-        // Shuffles an array (Fisher-Yates algorithm)
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -575,7 +582,7 @@
             dragTargetIndex = -1;
 
             timeline.innerHTML = '';
-            renderDropIndicators(); // Ensure initial indicator is present
+            renderDropIndicators();
             gameEndModal.classList.remove('show');
 
             loadNextCard();
@@ -600,46 +607,23 @@
             return cardEl;
         }
 
-        // Helper to check correctness of a single card within an array
         function checkSingleCardCorrectness(cardsArray, cardIndex) {
             const card = cardsArray[cardIndex];
-            let cardCorrect = true;
+            if (!card) return false;
 
+            let isCorrect = true;
             // Check against previous card
             if (cardIndex > 0 && cardsArray[cardIndex - 1].cardData.date.getTime() > card.cardData.date.getTime()) {
-                cardCorrect = false;
+                isCorrect = false;
             }
             // Check against next card
             if (cardIndex < cardsArray.length - 1 && cardsArray[cardIndex + 1].cardData.date.getTime() < card.cardData.date.getTime()) {
-                cardCorrect = false;
+                isCorrect = false;
             }
-            return cardCorrect;
-        }
-
-        function getCardColor(id) {
-            switch (id) {
-                case 'potatoes': return var_color('--card-purple');
-                case 'french-fashion': return var_color('--card-yellow');
-                case 'mashed-potato-dance': return var_color('--card-green');
-                case 'snl-salad': return var_color('--card-pink');
-                case 'mcdonalds-fries': return 'lightcoral';
-                case 'printing-press': return 'gold';
-                case 'electric-light': return 'lightblue';
-                case 'moon-landing': return 'lightgoldenrodyellow';
-                case 'internet-born': return 'lightsteelblue';
-                case 'apple-founded': return 'silver';
-                case 'fall-berlin-wall': return 'lightgrey';
-                case 'first-iphone': return 'plum';
-                default: return '#cccccc';
-            }
-        }
-
-        function var_color(varName) {
-            return getComputedStyle(document.documentElement).getPropertyValue(varName);
+            return isCorrect;
         }
 
         function loadNextCard() {
-            console.log('loadNextCard called. Unplaced cards left:', unplacedCards.length);
             if (unplacedCards.length === 0) {
                 endGame();
                 return;
@@ -649,22 +633,31 @@
             currentCardElement.dataset.id = currentCard.id;
             currentCardElement.querySelector('img').src = currentCard.image;
             currentCardElement.querySelector('.card-text').textContent = currentCard.text;
-            currentCardElement.querySelector('.card-date').textContent = '?'; // Hide date initially
-            currentCardElement.querySelector('.card-date').style.backgroundColor = '#f0f0f0'; // Grey for current card's date background
-            
-            // Reset any drag-related styles from previous turns
+            currentCardElement.querySelector('.card-date').textContent = '?';
+            currentCardElement.querySelector('.card-date').style.backgroundColor = '#f0f0f0';
+
             currentCardElement.style.position = 'relative';
             currentCardElement.style.left = 'auto';
             currentCardElement.style.top = 'auto';
             currentCardElement.style.transform = 'none';
-            currentCardElement.style.width = 'auto'; // Ensure width is not fixed from a previous drag
-            
-            currentCardElement.classList.remove('hidden'); // Make it visible
-            currentCardElement.style.display = 'flex'; // Explicitly ensure it's displayed as flex
-            console.log('Current card element visibility status (hidden class):', currentCardElement.classList.contains('hidden') ? 'hidden' : 'visible');
+
+            currentCardElement.style.display = 'flex'; // Explicitly set display
+            currentCardElement.classList.remove('hidden');
         }
 
-        // --- Touch Drag & Drop Implementation ---
+        // --- Touch Drag & Drop with Auto-Scroll ---
+        const startScroll = (direction) => {
+            if (scrollInterval) return; // Prevent multiple intervals
+            scrollInterval = setInterval(() => {
+                timelineWrapper.scrollTop += direction === 'down' ? 10 : -10;
+            }, 50); // Scroll speed
+        };
+
+        const stopScroll = () => {
+            clearInterval(scrollInterval);
+            scrollInterval = null;
+        };
+
         currentCardElement.addEventListener('touchstart', (e) => {
             if (e.touches.length === 1 && !currentCardElement.classList.contains('hidden')) {
                 e.preventDefault();
@@ -677,212 +670,146 @@
                 initialOffsetX = touch.clientX - currentCardRect.left;
                 initialOffsetY = touch.clientY - currentCardRect.top;
 
-                // Set initial position for fixed element relative to viewport
-                currentCardElement.style.left = (touch.clientX - initialOffsetX) + 'px';
-                currentCardElement.style.top = (touch.clientY - initialOffsetY) + 'px';
-                currentCardElement.style.position = 'fixed'; // Lift from document flow
+                currentCardElement.style.left = `${touch.clientX - initialOffsetX}px`;
+                currentCardElement.style.top = `${touch.clientY - initialOffsetY}px`;
+                currentCardElement.style.position = 'fixed';
 
                 hideAllDropIndicators();
             }
         }, { passive: false });
 
         currentCardElement.addEventListener('touchmove', (e) => {
-            if (isDragging && e.touches.length === 1) {
-                e.preventDefault();
-                const touch = e.touches[0];
+            if (!isDragging || e.touches.length !== 1) return;
+            e.preventDefault();
+            const touch = e.touches[0];
 
-                // Update card position
-                currentCardElement.style.left = (touch.clientX - initialOffsetX) + 'px';
-                currentCardElement.style.top = (touch.clientY - initialOffsetY) + 'px';
+            currentCardElement.style.left = `${touch.clientX - initialOffsetX}px`;
+            currentCardElement.style.top = `${touch.clientY - initialOffsetY}px`;
 
-                hideAllDropIndicators();
-                dragTargetIndex = -1; // Reset for each move
+            const timelineRect = timelineWrapper.getBoundingClientRect();
+            const scrollZone = timelineRect.height * 0.15; // 15% hot zone
 
-                const timelineRect = timeline.getBoundingClientRect();
+            // Auto-scroll logic
+            if (touch.clientY < timelineRect.top + scrollZone) {
+                startScroll('up');
+            } else if (touch.clientY > timelineRect.bottom - scrollZone) {
+                startScroll('down');
+            } else {
+                stopScroll();
+            }
 
-                // Only detect targets if within the general timeline area
-                if (touch.clientY > timelineRect.top && touch.clientY < timelineRect.bottom &&
-                    touch.clientX > timelineRect.left && touch.clientX < timelineRect.right) {
+            // Drop target logic
+            hideAllDropIndicators();
+            dragTargetIndex = -1;
 
-                    let bestTargetIndex = -1;
-                    let closestDistance = Infinity;
+            let bestTargetIndex = -1;
+            let closestDistance = Infinity;
 
-                    const indicators = Array.from(timeline.querySelectorAll('.card-drop-indicator'));
+            const indicators = Array.from(timeline.querySelectorAll('.card-drop-indicator'));
 
-                    indicators.forEach(indicator => {
-                        const indicatorRect = indicator.getBoundingClientRect();
-                        const distance = Math.abs(touch.clientY - (indicatorRect.top + indicatorRect.height / 2));
+            indicators.forEach(indicator => {
+                const indicatorRect = indicator.getBoundingClientRect();
+                const distance = Math.abs(touch.clientY - (indicatorRect.top + indicatorRect.height / 2));
 
-                        // Consider an indicator a target if the touch is vertically close
-                        if (distance < closestDistance && distance < 30) { // Within 30px vertical tolerance
-                            closestDistance = distance;
-                            bestTargetIndex = parseInt(indicator.dataset.index);
-                        }
-                    });
-
-                    if (bestTargetIndex !== -1) {
-                        const activeIndicator = timeline.querySelector(`.card-drop-indicator[data-index="${bestTargetIndex}"]`);
-                        if (activeIndicator) {
-                            activeIndicator.classList.add('show');
-                        }
-                        dragTargetIndex = bestTargetIndex;
-                    }
+                if (distance < closestDistance && distance < 40) { // 40px tolerance
+                    closestDistance = distance;
+                    bestTargetIndex = parseInt(indicator.dataset.index);
                 }
+            });
+
+            if (bestTargetIndex !== -1) {
+                const activeIndicator = timeline.querySelector(`.card-drop-indicator[data-index="${bestTargetIndex}"]`);
+                if (activeIndicator) activeIndicator.classList.add('show');
+                dragTargetIndex = bestTargetIndex;
             }
         }, { passive: false });
 
         currentCardElement.addEventListener('touchend', (e) => {
             if (isDragging) {
                 isDragging = false;
+                stopScroll();
                 currentCardElement.classList.remove('dragging');
-                
                 hideAllDropIndicators();
 
                 if (dragTargetIndex !== -1) {
                     placeCard(currentCard, dragTargetIndex);
                 } else {
-                    // If dropped outside a valid target, snap card back to original position (card holder)
+                    // Snap back
                     currentCardElement.style.position = 'relative';
                     currentCardElement.style.left = 'auto';
                     currentCardElement.style.top = 'auto';
                     currentCardElement.style.transform = 'none';
-                    currentCardElement.style.width = 'auto'; // Reset width
                 }
-                dragTargetIndex = -1; // Reset
+                dragTargetIndex = -1;
             }
         });
 
-
-        function hideAllDropIndicators() {
-            document.querySelectorAll('.card-drop-indicator').forEach(indicator => {
-                indicator.classList.remove('show');
-            });
-        }
-
+        // --- Card Placement & Timeline Management ---
         async function placeCard(cardData, insertionIndex) {
-            console.log('Attempting to place card:', cardData.id, 'at index:', insertionIndex);
-            const newPlacedCard = {
-                cardData: cardData,
-                element: createCardElement(cardData),
-                isCorrect: false, // Will be determined
-                isFixed: false
-            };
+            const newPlacedCard = { cardData, element: createCardElement(cardData) };
 
-            currentCardElement.classList.add('hidden'); // Hide the draggable card from the holder area
+            currentCardElement.classList.add('hidden');
 
-            // Step 1: Temporarily add to a hypothetical array to check correctness at attempted position
             const tempPlacedCards = [...placedCards];
             tempPlacedCards.splice(insertionIndex, 0, newPlacedCard);
             
-            // Check correctness of this specific card at its attempted position
-            const newCardIndexInTemp = tempPlacedCards.indexOf(newPlacedCard);
-            newPlacedCard.isCorrect = checkSingleCardCorrectness(tempPlacedCards, newCardIndexInTemp);
+            const isCorrect = checkSingleCardCorrectness(tempPlacedCards, tempPlacedCards.indexOf(newPlacedCard));
 
-            // Step 2: Apply immediate visual feedback (border, icon, date color)
             newPlacedCard.element.querySelector('.card-date').textContent = formatDate(cardData.date);
-            if (newPlacedCard.isCorrect) {
+            if (isCorrect) {
                 newPlacedCard.element.classList.add('correct');
                 newPlacedCard.element.querySelector('.feedback-icon.correct-icon').classList.add('show');
-                newPlacedCard.element.querySelector('.card-date').style.backgroundColor = var_color('--card-green');
-                newPlacedCard.isFixed = true;
             } else {
+                wrongAnswers++;
                 newPlacedCard.element.classList.add('incorrect');
                 newPlacedCard.element.querySelector('.feedback-icon.incorrect-icon').classList.add('show');
-                newPlacedCard.element.querySelector('.card-date').style.backgroundColor = var_color('--card-pink');
-                wrongAnswers++;
             }
 
-            // Step 3: Insert into the DOM at the user's attempted position FIRST
-            // This is crucial for the animation to start from the "wrong" spot if applicable
             insertCardElementIntoTimeline(newPlacedCard.element, insertionIndex);
             
-            // Step 4: Wait for initial feedback (icon, border) to be observed
-            await new Promise(resolve => setTimeout(resolve, 600)); // Increased for clarity
+            await new Promise(resolve => setTimeout(resolve, 250)); // Fast feedback delay
 
-            // Step 5: If the placed card was incorrect, animate it to its true sorted position
-            if (!newPlacedCard.isCorrect) {
-                console.log('Card was placed incorrectly. Animating to correct position.');
-                // Capture the current DOM positions before we modify the placedCards array
-                const initialRects = Array.from(timeline.children).map(child => child.getBoundingClientRect());
-                const currentNewCardIndex = Array.from(timeline.children).indexOf(newPlacedCard.element);
-
-                // Update the actual `placedCards` array with the new card and sort it
-                placedCards = [...placedCards]; // Ensure we are working with a fresh copy
-                placedCards.splice(insertionIndex, 0, newPlacedCard); // Add at attempted spot in our array
-                placedCards.sort((a,b) => a.cardData.date.getTime() - b.cardData.date.getTime()); // Sort the array
-                
-                // Temporarily apply absolute positioning to the new card to animate it
-                // We need to calculate where it *would* be in the sorted DOM.
-                // This is a more complex animation that would require detaching elements,
-                // calculating positions, animating transforms, then re-attaching.
-
-                // Simplified animation: The 'jump' is handled by the `rebuildTimelineDOM`
-                // and the `transition` on `.timeline-card` element.
-                // The visual feedback (red) and the pause before the jump is the 'animation' for wrong.
+            if (!isCorrect) {
+                placedCards.push(newPlacedCard);
+                placedCards.sort((a, b) => a.cardData.date.getTime() - b.cardData.date.getTime());
             } else {
-                // If correct, just update the placedCards array with the new card
-                placedCards.splice(insertionIndex, 0, newPlacedCard);
+                placedCards = tempPlacedCards;
             }
-
-            // Step 6: Rebuild the DOM to reflect the final (sorted) state of `placedCards`
+            
             rebuildTimelineDOM();
 
-            // Step 7: Load next card after a short delay to allow UI to settle
-            setTimeout(loadNextCard, 700);
+            setTimeout(loadNextCard, 250); // Fast load next
         }
 
-        // Inserts a card DOM element before a specific drop indicator in the timeline
         function insertCardElementIntoTimeline(cardElement, index) {
             const dropIndicators = timeline.querySelectorAll('.card-drop-indicator');
-            if (index >= dropIndicators.length) {
-                timeline.appendChild(cardElement); // Append to end if index is out of bounds (or no indicators)
+            if (index >= dropIndicators.length || dropIndicators.length === 0) {
+                timeline.appendChild(cardElement);
             } else {
-                // Insert before the drop indicator at the given index
                 timeline.insertBefore(cardElement, dropIndicators[index]);
             }
         }
 
         function rebuildTimelineDOM() {
-            console.log('rebuildTimelineDOM called. Current placedCards length:', placedCards.length);
-            // Collect existing DOM elements to re-use if possible for smoother transitions
-            const existingElements = new Map();
-            Array.from(timeline.children).forEach(child => {
-                if (child.classList.contains('timeline-card')) {
-                    existingElements.set(child.dataset.id, child);
-                }
+            const currentElements = new Map(placedCards.map(p => [p.cardData.id, p.element]));
+            timeline.innerHTML = ''; // Clear
+
+            placedCards.forEach(p => {
+                const element = currentElements.get(p.cardData.id);
+                timeline.appendChild(element);
             });
 
-            timeline.innerHTML = ''; // Clear current DOM elements
-
-            // Insert each placed card's element into the timeline based on `placedCards` array
-            placedCards.forEach(placedCard => {
-                let cardDOMElement = existingElements.get(placedCard.cardData.id);
-
-                if (cardDOMElement) {
-                    // If element already exists, ensure its transform is reset for smooth re-layout
-                    cardDOMElement.style.transform = 'none';
-                    cardDOMElement.style.transition = ''; // Reset transition to allow CSS transitions to take over
-                } else {
-                    cardDOMElement = placedCard.element;
-                }
-                timeline.appendChild(cardDOMElement);
-                // Ensure the `placedCard` object's element reference is always up-to-date
-                placedCard.element = cardDOMElement; 
-            });
-
-            renderDropIndicators(); // Re-render indicators after cards are in place
+            renderDropIndicators();
         }
 
         function renderDropIndicators() {
             document.querySelectorAll('.card-drop-indicator').forEach(indicator => indicator.remove());
-
             for (let i = 0; i <= placedCards.length; i++) {
                 const indicator = document.createElement('div');
                 indicator.classList.add('card-drop-indicator');
                 indicator.dataset.index = i;
                 timeline.insertBefore(indicator, (i < placedCards.length ? placedCards[i].element : null));
             }
-            // Ensure the first indicator is always visible when timeline is empty
             if (placedCards.length === 0) {
                  timeline.querySelector('.card-drop-indicator[data-index="0"]').classList.add('show');
             }
@@ -919,19 +846,8 @@
             initializeGame();
         }
 
-        // Initial setup
+        // --- Initializer ---
         initializeGame();
-
-        // Prevent body scroll on touch for areas not meant for scrolling
-        document.body.addEventListener('touchmove', (e) => {
-            // Allow scrolling on the timeline-wrapper if not actively dragging a card
-            if (!isDragging && e.target.closest('#timeline-wrapper')) {
-                return; // Let the timeline-wrapper scroll naturally
-            }
-            if (!isDragging) { // Prevent other body scrolling if not dragging and not in timeline-wrapper
-                e.preventDefault();
-            }
-        }, { passive: false });
 
     </script>
 </body>
