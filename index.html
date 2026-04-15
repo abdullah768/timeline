@@ -20,7 +20,7 @@
             --incorrect-color: #dc3545;
             --modal-bg: rgba(0, 0, 0, 0.6);
             --modal-content-bg: #fff;
-            --drag-over-color: #007bff; /* Color for drag-over effect */
+            --active-card-border: #007bff; /* Border for selected card */
         }
 
         /* Base styles for iPhone 16 Pro Max */
@@ -51,44 +51,69 @@
         /* Header Styles */
         .app-header {
             background-color: var(--yellow-bg);
-            padding: 2vh 4vw; /* Adjusted padding */
+            padding: 1.5vh 4vw; /* Adjusted padding */
             display: flex;
             flex-direction: column;
-            align-items: flex-start; /* Align back arrow to left */
+            align-items: center;
+            gap: 1.5vh;
             position: relative;
             overflow: hidden;
-            height: 8vh; /* Fixed height for header */
-            justify-content: center;
         }
 
         .header-top-bar {
             width: 100%;
             display: flex;
-            justify-content: flex-start; /* Only back arrow on left */
+            justify-content: space-between;
             align-items: center;
-            padding: 0; /* Reset padding */
+            padding: 0 2vw;
             z-index: 1;
         }
 
-        .back-arrow-container {
+        .book-icon-container {
+            background-color: #FFC0CB; /* Pink */
+            border-radius: 50%;
             width: 8vh;
             height: 8vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 4vh;
-            color: #000; /* Black arrow */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
-        /* Removed .book-icon-container and .stars-container */
-        /* Removed .play-puzzle-banner */
+        .book-icon-container i {
+            color: #fff;
+            font-size: 4vh;
+        }
+
+        .stars-container {
+            display: flex;
+            gap: 1vw;
+            font-size: 3vh;
+            color: #fff;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .play-puzzle-banner {
+            background-color: var(--card-bg-light);
+            border-radius: 2.5vh;
+            padding: 2.5vh 6vw; /* Original padding for banner */
+            box-shadow: 0 4px 10px var(--card-shadow);
+            font-size: 3.2vh; /* Original font size for banner */
+            font-weight: 600;
+            color: var(--header-text-color);
+            text-align: center;
+            width: 80%;
+            max-width: 400px;
+            box-sizing: border-box;
+            z-index: 1;
+        }
 
         /* Game Area */
         .game-area {
             flex-grow: 1;
             display: flex;
             flex-direction: column;
-            background-color: #F8F8F8; /* Light grey background for the game area */
+            background-color: #F8F8F8;
             border-top-left-radius: 4vh;
             border-top-right-radius: 4vh;
             overflow: hidden;
@@ -106,10 +131,10 @@
 
         .timeline-line {
             position: absolute;
-            left: 10vw; /* Position of the vertical line */
+            left: 10vw;
             top: 0;
             bottom: 0;
-            width: 1px; /* Thinner line */
+            width: 2px; /* Original thickness */
             background-color: var(--timeline-line-color);
             z-index: 0;
         }
@@ -117,34 +142,34 @@
         .timeline-label {
             position: absolute;
             left: 10vw;
-            transform-origin: 0 0; /* Rotate around its top-left corner */
-            transform: translateX(-50%) rotate(-90deg); /* Rotate text */
+            transform-origin: 0 0;
+            transform: translateX(-50%) rotate(-90deg); /* Vertical text */
             font-size: 1.8vh;
             font-weight: 500;
             color: #888;
             background-color: #F8F8F8;
             padding: 0 1vw;
             z-index: 1;
-            white-space: nowrap; /* Prevent text wrapping */
+            white-space: nowrap;
         }
 
         .before-label {
-            top: 10vh; /* Adjusted position after rotation */
-            left: calc(10vw - 1.5vh); /* Fine-tune position */
+            top: 10vh;
+            left: calc(10vw - 1.5vh);
         }
 
         .after-label {
-            bottom: 10vh; /* Adjusted position after rotation */
-            left: calc(10vw - 1.5vh); /* Fine-tune position */
+            bottom: 10vh;
+            left: calc(10vw - 1.5vh);
         }
 
         .timeline-cards-container {
             display: flex;
             flex-direction: column;
             align-items: flex-start;
-            padding-left: calc(10vw + 20px); /* Offset for the timeline line + some margin */
+            padding-left: calc(10vw + 20px);
             padding-right: 4vw;
-            gap: 1.5vh; /* Slightly less space between cards */
+            gap: 2vh; /* Original spacing */
             min-height: 100%;
             box-sizing: border-box;
         }
@@ -161,7 +186,7 @@
             max-width: 80vw;
             box-sizing: border-box;
             position: relative;
-            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out, border 0.2s ease-in-out;
             margin-left: 0;
         }
 
@@ -179,9 +204,9 @@
         }
 
         .card-image {
-            width: 8vh; /* Slightly smaller image */
-            height: 8vh;
-            border-radius: 1.2vh; /* Slightly less rounded */
+            width: 10vh; /* Original image size */
+            height: 10vh;
+            border-radius: 1.5vh; /* Original border-radius */
             object-fit: cover;
             margin-right: 3vw;
             flex-shrink: 0;
@@ -195,19 +220,19 @@
             gap: 0.5vh;
         }
 
-        .card-date-pill {
-            background-color: rgba(0, 0, 0, 0.08); /* Light grey background for pill */
-            border-radius: 1vh; /* Pill shape */
+        .card-date-pill { /* Renamed from card-date-pill to card-date-box for clarity */
+            background-color: rgba(0, 0, 0, 0.08);
+            border-radius: 0.8vh; /* Slightly less rounded for box look */
             padding: 0.5vh 1.5vw;
-            font-size: 1.6vh; /* Smaller font for date */
+            font-size: 1.8vh; /* Original font size for date */
             font-weight: 600;
             color: #555;
-            align-self: flex-start; /* Align pill to left */
+            align-self: flex-start;
             margin-bottom: 0.5vh;
         }
 
         .card-text {
-            font-size: 2.1vh; /* Slightly smaller text */
+            font-size: 2.2vh; /* Original text size */
             line-height: 1.3;
             color: var(--text-color);
         }
@@ -221,21 +246,21 @@
         }
 
         .card-status-icon.correct {
-            color: var(--correct-color); /* Green for correct */
+            color: var(--correct-color);
         }
 
         .card-status-icon.incorrect {
-            color: var(--incorrect-color); /* Red for incorrect */
+            color: var(--incorrect-color);
         }
 
         /* Insertion Point Styles */
         .insertion-point {
             width: 100%;
-            height: 3vh; /* Smaller height for subtle line */
+            height: 2vh; /* Very subtle height */
             display: flex;
             justify-content: center;
             align-items: center;
-            cursor: grab;
+            cursor: pointer; /* Indicate clickable */
             position: relative;
             z-index: 2;
             transition: background-color 0.2s ease-in-out;
@@ -244,16 +269,19 @@
         .insertion-point::before {
             content: '';
             position: absolute;
-            left: calc(10vw - 1px); /* Align with timeline line */
-            width: 1px; /* Thin line */
-            height: 100%; /* Full height of insertion point */
-            background-color: transparent; /* Invisible by default */
-            transition: background-color 0.2s ease-in-out;
+            left: 10vw; /* Align with timeline line */
+            transform: translateX(-50%);
+            width: 1.5vh; /* Dot size */
+            height: 1.5vh; /* Dot size */
+            background-color: var(--timeline-line-color); /* Grey dot by default */
+            border-radius: 50%;
+            opacity: 0.7;
+            transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
         }
 
-        .insertion-point.drag-over::before {
-            background-color: var(--drag-over-color); /* Blue line on drag-over */
-            width: 2px; /* Slightly thicker line on drag-over */
+        .insertion-point.active::before { /* Active state for insertion point */
+            background-color: var(--insertion-point-color); /* Blue dot when active */
+            transform: translateX(-50%) scale(1.2); /* Slightly larger */
         }
 
         /* Card Holder */
@@ -267,15 +295,20 @@
             min-height: 18vh;
             box-sizing: border-box;
             z-index: 10;
-            position: relative; /* For the count */
+            position: relative;
         }
 
         .card-holder-container .card {
             width: 90%;
             max-width: 90vw;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.25); /* More prominent shadow */
-            cursor: grab;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+            cursor: pointer; /* Indicate clickable */
             transform: rotate(-2deg); /* Slight rotation */
+            border: 2px solid transparent; /* Default transparent border */
+        }
+
+        .card-holder-container .card.active {
+            border: 2px solid var(--active-card-border); /* Blue border when active */
         }
 
         .remaining-cards-count {
@@ -294,10 +327,9 @@
             font-size: 2vh;
         }
 
-
         /* Modal Styles */
         .modal {
-            display: none; /* Hidden by default */
+            display: none;
             position: fixed;
             z-index: 100;
             left: 0;
@@ -381,10 +413,16 @@
 <div class="app-container">
     <header class="app-header">
         <div class="header-top-bar">
-            <div class="back-arrow-container">
-                <i class="fas fa-arrow-left"></i>
+            <div class="book-icon-container">
+                <i class="fas fa-book"></i>
             </div>
-            <!-- Removed stars-container and play-puzzle-banner -->
+            <div class="stars-container">
+                <i class="fas fa-star"></i>
+                <i class="far fa-circle"></i>
+            </div>
+        </div>
+        <div class="play-puzzle-banner">
+            Play new puzzles daily
         </div>
     </header>
 
@@ -400,322 +438,4 @@
         </div>
 
         <div id="card-holder-container" class="card-holder-container">
-            <div class="remaining-cards-count">
-                <i class="fas fa-clone"></i> <span id="unplaced-count"></span>
-            </div>
-            <!-- Current card to be placed will be rendered here by JavaScript -->
-        </div>
-    </main>
-
-    <div id="result-modal" class="modal">
-        <div class="modal-content">
-            <h2 id="result-title"></h2>
-            <p id="result-message"></p>
-            <div id="result-medal"></div>
-            <button id="play-again-button">Play Again</button>
-        </div>
-    </div>
-</div>
-
-<script>
-    const allEvents = [
-        // You can easily modify these cards!
-        // 'date' uses new Date(year, monthIndex, day)
-        // monthIndex is 0-indexed (0 for Jan, 11 for Dec)
-        // IMPORTANT: Replace these image URLs with your own direct links!
-        // Using picsum.photos for reliable placeholders.
-        { id: 'e1', image: 'https://picsum.photos/id/237/100/100', text: 'Potatoes brought to Europe', date: new Date(1550, 6, 1), color: '#D8BFD8' }, // Mid-1500s (July 1, 1550)
-        { id: 'e2', image: 'https://picsum.photos/id/238/100/100', text: 'French potato fashion', date: new Date(1770, 0, 1), color: '#FFFF99' }, // ~1770s (Jan 1, 1770)
-        { id: 'e6', image: 'https://picsum.photos/id/239/100/100', text: 'Irish Potato Famine begins', date: new Date(1845, 8, 1), color: '#ADD8E6' }, // 1845 (Sept 1, 1845)
-        { id: 'e7', image: 'https://picsum.photos/id/240/100/100', text: 'First potato chips invented', date: new Date(1853, 7, 24), color: '#FFD700' }, // 1853 (Aug 24, 1853)
-        { id: 'e5', image: 'https://picsum.photos/id/241/100/100', text: "McDonald's adds fries to the menu", date: new Date(1949, 11, 15), color: '#FFFFFF' }, // 1949 (Dec 15, 1949 - first fries on menu)
-        { id: 'e8', image: 'https://picsum.photos/id/242/100/100', text: 'Mr. Potato Head toy released', date: new Date(1952, 4, 1), color: '#FFC0CB' }, // 1952 (May 1, 1952)
-        { id: 'e3', image: 'https://picsum.photos/id/243/100/100', text: 'Mashed Potato dance craze', date: new Date(1960, 0, 1), color: '#90EE90' }, // 1960 (Jan 1, 1960)
-        { id: 'e4', image: 'https://picsum.photos/id/244/100/100', text: 'Raisin potato salad on SNL', date: new Date(2018, 9, 27), color: '#FFB6C1' }, // 2018 (Oct 27, 2018 - SNL skit date)
-    ];
-
-    // --- Game State Variables ---
-    let correctOrder = []; // All events sorted by date
-    let timelineCards = []; // Cards currently placed on the timeline
-    let unplacedCards = []; // Cards waiting to be placed (shuffled)
-    let currentCard = null; // The card currently in the holder
-    let wrongAnswersCount = 0;
-    let isGameActive = false;
-    // draggedCardData is no longer needed as currentCard directly represents the draggable item
-
-    // --- DOM Elements ---
-    const timelineCardsContainer = document.getElementById('timeline-cards-container');
-    const cardHolderContainer = document.getElementById('card-holder-container');
-    const resultModal = document.getElementById('result-modal');
-    const resultTitle = document.getElementById('result-title');
-    const resultMessage = document.getElementById('result-message');
-    const resultMedal = document.getElementById('result-medal');
-    const playAgainButton = document.getElementById('play-again-button');
-    const unplacedCountSpan = document.getElementById('unplaced-count');
-
-    // --- Helper Functions ---
-
-    // Shuffles an array (Fisher-Yates algorithm)
-    function shuffleArray(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-        return array;
-    }
-
-    // Formats a Date object into a readable string (e.g., "Jan 1, 1960")
-    function formatDate(date) {
-        const options = { year: 'numeric', month: 'short', day: 'numeric' };
-        return date.toLocaleDateString('en-US', options);
-    }
-
-    // Creates a card DOM element
-    function createCardElement(cardData, isCurrentCardInHolder = false) {
-        const cardDiv = document.createElement('div');
-        cardDiv.className = 'card';
-        cardDiv.setAttribute('data-id', cardData.id);
-        cardDiv.setAttribute('data-color', cardData.color); // Set data-color for CSS styling
-
-        if (isCurrentCardInHolder) {
-            cardDiv.setAttribute('draggable', 'true'); // Make the card in holder draggable
-            cardDiv.addEventListener('dragstart', handleDragStart);
-        }
-
-        const cardImage = document.createElement('img');
-        cardImage.className = 'card-image';
-        cardImage.src = cardData.image;
-        cardImage.alt = cardData.text;
-
-        const cardContent = document.createElement('div');
-        cardContent.className = 'card-content';
-
-        const cardDatePill = document.createElement('span'); // New element for date pill
-        cardDatePill.className = 'card-date-pill';
-        cardDatePill.textContent = formatDate(cardData.date);
-
-        const cardText = document.createElement('div');
-        cardText.className = 'card-text';
-        cardText.textContent = cardData.text;
-
-        cardContent.appendChild(cardDatePill); // Append pill first
-        cardContent.appendChild(cardText);
-        cardDiv.appendChild(cardImage);
-        cardDiv.appendChild(cardContent);
-
-        // Add status icon only if it's a placed card (not in the holder)
-        if (!isCurrentCardInHolder && cardData.isCorrectlyPlaced !== undefined) {
-            const statusIcon = document.createElement('i');
-            statusIcon.className = 'card-status-icon fas';
-            if (cardData.isCorrectlyPlaced) {
-                statusIcon.classList.add('fa-check-circle', 'correct'); // Use fa-check-circle for outlined tick
-            } else {
-                statusIcon.classList.add('fa-times-circle', 'incorrect');
-            }
-            cardDiv.appendChild(statusIcon);
-        }
-
-        return cardDiv;
-    }
-
-    // Creates an insertion point DOM element
-    function createInsertionPoint(index) {
-        const insertionPoint = document.createElement('div');
-        insertionPoint.className = 'insertion-point';
-        insertionPoint.setAttribute('data-index', index); // Store index for drop target
-        insertionPoint.addEventListener('dragover', handleDragOver);
-        insertionPoint.addEventListener('dragleave', handleDragLeave);
-        insertionPoint.addEventListener('drop', handleDrop);
-        return insertionPoint;
-    }
-
-    // --- Drag and Drop Handlers ---
-    function handleDragStart(event) {
-        if (!isGameActive || !currentCard) {
-            event.preventDefault();
-            return;
-        }
-        // Set data for drag operation (optional, but good practice)
-        event.dataTransfer.setData('text/plain', currentCard.id); // Just pass the ID
-        // Add a class to the dragged card for visual feedback (e.g., opacity)
-        event.currentTarget.classList.add('dragging');
-    }
-
-    function handleDragOver(event) {
-        event.preventDefault(); // Necessary to allow dropping
-        if (isGameActive && currentCard) { // Check if there's a card to drag
-            event.currentTarget.classList.add('drag-over'); // Visual feedback for drop target
-        }
-    }
-
-    function handleDragLeave(event) {
-        event.currentTarget.classList.remove('drag-over');
-    }
-
-    function handleDrop(event) {
-        event.preventDefault();
-        event.currentTarget.classList.remove('drag-over'); // Remove visual feedback
-
-        if (!isGameActive || !currentCard) return; // Ensure there's a card to drop
-
-        const insertionIndex = parseInt(event.currentTarget.getAttribute('data-index'));
-        handleCardPlacement(insertionIndex);
-
-        // Remove dragging class from the card holder
-        const draggingCardElement = cardHolderContainer.querySelector('.card.dragging');
-        if (draggingCardElement) {
-            draggingCardElement.classList.remove('dragging');
-        }
-    }
-
-    // --- Game Logic Functions ---
-
-    function initializeGame() {
-        // Reset game state
-        wrongAnswersCount = 0;
-        timelineCards = [];
-        unplacedCards = [];
-        currentCard = null;
-        isGameActive = true;
-        resultModal.style.display = 'none'; // Hide modal
-
-        // 1. Sort all events to get the correct chronological order
-        correctOrder = [...allEvents].sort((a, b) => a.date - b.date);
-
-        // 2. Place the first card on the timeline as a starting point
-        const firstCard = { ...correctOrder[0], isCorrectlyPlaced: true };
-        timelineCards.push(firstCard);
-
-        // 3. The rest of the cards are for the user to place, shuffled
-        const remainingCards = correctOrder.slice(1);
-        unplacedCards = shuffleArray(remainingCards.map(card => ({ ...card }))); // Deep copy to avoid modifying original
-
-        // 4. Set the first card to be placed
-        currentCard = unplacedCards.shift();
-
-        renderGame();
-    }
-
-    function renderGame() {
-        renderTimeline();
-        renderCardHolder();
-        checkGameEnd();
-    }
-
-    function renderTimeline() {
-        timelineCardsContainer.innerHTML = ''; // Clear existing cards and insertion points
-
-        // Add an insertion point at the very beginning
-        if (isGameActive && currentCard) {
-            timelineCardsContainer.appendChild(createInsertionPoint(0));
-        }
-
-        timelineCards.forEach((card, index) => {
-            timelineCardsContainer.appendChild(createCardElement(card));
-            // Add an insertion point after each card
-            if (isGameActive && currentCard) {
-                timelineCardsContainer.appendChild(createInsertionPoint(index + 1));
-            }
-        });
-
-        // Scroll to the bottom of the timeline to show the latest cards/insertion points
-        timelineCardsContainer.scrollTop = timelineCardsContainer.scrollHeight;
-    }
-
-    function renderCardHolder() {
-        cardHolderContainer.querySelector('.card')?.remove(); // Remove old card if exists
-        if (currentCard) {
-            cardHolderContainer.appendChild(createCardElement(currentCard, true));
-        }
-        unplacedCountSpan.textContent = unplacedCards.length; // Update remaining count
-    }
-
-    function handleCardPlacement(insertionIndex) {
-        // Use currentCard directly as it's the one being dragged
-        const cardToPlace = currentCard; 
-        let actualInsertionIndex = insertionIndex; // This is where the user *tried* to place it
-
-        // Determine the correct chronological position for the cardToPlace
-        let correctPositionIndex = 0;
-        while (correctPositionIndex < timelineCards.length &&
-               cardToPlace.date > timelineCards[correctPositionIndex].date) {
-            correctPositionIndex++;
-        }
-
-        // Check if the user placed it correctly
-        if (actualInsertionIndex === correctPositionIndex) {
-            cardToPlace.isCorrectlyPlaced = true;
-        } else {
-            cardToPlace.isCorrectlyPlaced = false;
-            wrongAnswersCount++;
-            // If incorrect, we'll visually place it at the correct position
-            actualInsertionIndex = correctPositionIndex;
-        }
-
-        // Insert the card into the timelineCards array
-        timelineCards.splice(actualInsertionIndex, 0, cardToPlace);
-
-        // Update currentCard to the next unplaced card
-        currentCard = unplacedCards.shift() || null;
-
-        // Re-render the game
-        renderGame();
-
-        // If the card was placed incorrectly, add a temporary class for animation
-        if (!cardToPlace.isCorrectlyPlaced) {
-            const placedCardElement = timelineCardsContainer.querySelector(`[data-id="${cardToPlace.id}"]`);
-            if (placedCardElement) {
-                placedCardElement.classList.add('incorrect');
-                setTimeout(() => {
-                    placedCardElement.classList.remove('incorrect');
-                }, 500); // Match animation duration
-            }
-        }
-    }
-
-    function checkGameEnd() {
-        if (!currentCard && unplacedCards.length === 0) {
-            isGameActive = false;
-            displayResults();
-        }
-    }
-
-    function displayResults() {
-        resultModal.style.display = 'flex'; // Show modal
-
-        let title = '';
-        let message = '';
-        let medalClass = '';
-
-        if (wrongAnswersCount === 0) {
-            title = 'Perfect Score!';
-            message = 'You got all the events in the correct order! Amazing!';
-            medalClass = 'gold fas fa-medal';
-        } else if (wrongAnswersCount === 1) {
-            title = 'Great Job!';
-            message = `You made only ${wrongAnswersCount} mistake. Almost perfect!`;
-            medalClass = 'silver fas fa-medal';
-        } else if (wrongAnswersCount === 2) {
-            title = 'Good Effort!';
-            message = `You made ${wrongAnswersCount} mistakes. Keep practicing!`;
-            medalClass = 'bronze fas fa-medal';
-        } else {
-            title = 'Nice Try!';
-            message = `You made ${wrongAnswersCount} mistakes. You'll get it next time!`;
-            medalClass = 'star fas fa-star';
-        }
-
-        resultTitle.textContent = title;
-        resultMessage.textContent = message;
-        resultMedal.className = ''; // Clear previous classes
-        resultMedal.classList.add(...medalClass.split(' ')); // Add new classes
-    }
-
-    // --- Event Listeners ---
-    playAgainButton.addEventListener('click', initializeGame);
-
-    // --- Initialize the game when the page loads ---
-    document.addEventListener('DOMContentLoaded', initializeGame);
-</script>
-</body>
-</html>
+            <d
