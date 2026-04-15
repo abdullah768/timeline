@@ -91,7 +91,7 @@
             border-radius: 18px;
             box-shadow: 0 4px 12px var(--shadow);
             display: flex; align-items: center;
-            width: 100%; height: 100px;
+            width: 100%; height: 110px; /* Height increased slightly for full date */
             border: 2px solid transparent;
             flex-shrink: 0;
             position: relative;
@@ -99,7 +99,7 @@
         }
 
         .card-img {
-            width: 80px; height: 80px;
+            width: 85px; height: 85px;
             border-radius: 12px; margin: 10px;
             object-fit: cover; flex-shrink: 0;
             background: #eee;
@@ -110,26 +110,27 @@
         .date-badge {
             display: inline-block;
             padding: 4px 10px; border-radius: 6px;
-            font-size: 0.8rem; font-weight: bold;
+            font-size: 0.75rem; font-weight: 800;
             background: #e5e5e5; margin-bottom: 4px;
+            white-space: nowrap;
         }
 
         .card-text {
-            font-size: 0.95rem; color: #333; margin: 0;
+            font-size: 0.9rem; color: #333; margin: 0;
             line-height: 1.2; font-weight: 500;
             display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
         }
 
         /* --- BOTTOM TRAY --- */
         #tray {
-            height: 140px; background: white;
+            height: 150px; background: white;
             display: flex; justify-content: center; align-items: center;
             box-shadow: 0 -5px 25px var(--shadow);
             z-index: 100; padding: 0 20px;
         }
 
         #current-card {
-            width: 100%; max-width: 340px; height: 100px;
+            width: 100%; max-width: 340px; height: 110px;
             background: white; border-radius: 18px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.15);
             display: flex; align-items: center;
@@ -157,7 +158,7 @@
         .incorrect { border-color: var(--card-pink); }
         .incorrect .date-badge { background: var(--card-pink); }
 
-        /* --- END GAME (MODAL) --- */
+        /* --- END GAME SCREEN --- */
         #end-modal {
             position: fixed; inset: 0;
             background: #f1f0e8; z-index: 10000;
@@ -166,29 +167,24 @@
             padding: 60px 40px; text-align: center;
         }
 
-        #end-anniversary {
-            font-size: 1.6rem; font-weight: 800; color: #333; margin-bottom: 40px;
-        }
+        #end-anniversary { font-size: 1.6rem; font-weight: 800; color: #333; margin-bottom: 40px; }
 
-        /* --- ILLUSTRATIVE MEDALS --- */
         .medal-box {
             width: 220px; height: 260px;
             position: relative; display: flex; flex-direction: column; align-items: center;
             margin-bottom: 30px;
         }
 
-        /* The Ribbon (Striped) */
         .ribbon {
             width: 80px; height: 100px;
-            background: #f26d21; /* Base Orange */
+            background: #f26d21;
             background-image: linear-gradient(90deg, transparent 25%, white 25%, white 40%, transparent 40%, transparent 60%, white 60%, white 75%, transparent 75%);
             position: absolute; top: 0; z-index: 1;
             clip-path: polygon(15% 0, 85% 0, 100% 100%, 50% 85%, 0 100%);
             border: 4px solid #1a1a1a;
         }
-        .ribbon-silver { background-color: #4caf50; } /* Green ribbon for bronze/silver look */
+        .ribbon-silver { background-color: #4caf50; }
 
-        /* The Medal Circle */
         .medal-body {
             width: 160px; height: 160px;
             border-radius: 50%; border: 8px solid #1a1a1a;
@@ -197,30 +193,32 @@
             box-shadow: 6px 6px 0px rgba(0,0,0,0.1);
         }
 
-        .gold-body { background: #fbb03b; border-color: #1a1a1a; }
+        .gold-body { background: #fbb03b; }
         .silver-body { background: #e6e6e6; }
         .bronze-body { background: #d78150; }
 
-        /* Inner Ring */
         .medal-body::before {
             content: ''; position: absolute; width: 120px; height: 120px;
             border-radius: 50%; border: 4px solid rgba(0,0,0,0.1);
         }
 
-        .medal-number {
-            font-size: 6rem; font-weight: 900; color: #1a1a1a; z-index: 3;
-            margin-top: -10px; opacity: 0.8;
-        }
+        .medal-number { font-size: 6rem; font-weight: 900; color: #1a1a1a; z-index: 3; margin-top: -10px; opacity: 0.8; }
 
-        /* Laurels (simplified) */
         .laurel {
             position: absolute; width: 30px; height: 60px;
-            border-left: 4px solid rgba(0,0,0,0.1);
-            border-bottom: 4px solid rgba(0,0,0,0.1);
-            border-radius: 0 0 0 20px;
-            bottom: 35px; left: 30px; transform: rotate(-15deg);
+            border-left: 4px solid rgba(0,0,0,0.1); border-bottom: 4px solid rgba(0,0,0,0.1);
+            border-radius: 0 0 0 20px; bottom: 35px; left: 30px; transform: rotate(-15deg);
         }
         .laurel-right { left: auto; right: 30px; transform: scaleX(-1) rotate(-15deg); }
+
+        .star-shape {
+            width: 160px; height: 160px;
+            background: #ffc107; border: 8px solid #1a1a1a;
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 4rem; color: #1a1a1a; font-weight: 900;
+            box-shadow: 6px 6px 0px rgba(0,0,0,0.1);
+        }
 
         #end-status { font-size: 2.5rem; font-weight: 900; color: #1a1a1a; margin-bottom: 10px; }
         #accuracy-stats { font-size: 1.1rem; color: #666; font-weight: 600; margin-bottom: 50px; }
@@ -231,7 +229,6 @@
             color: #1a1a1a; font-size: 1.2rem; font-weight: 900;
             cursor: pointer; box-shadow: 4px 4px 0px #1a1a1a;
         }
-        .btn-restart:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0px #1a1a1a; }
     </style>
 </head>
 <body>
@@ -261,38 +258,25 @@
         </div>
     </div>
 
-    <!-- END GAME SCREEN -->
     <div id="end-modal">
         <div id="end-anniversary">Happy Anniversary</div>
-        
-        <div class="medal-box" id="medal-slot">
-            <!-- Dynamic Content -->
-        </div>
-
+        <div class="medal-box" id="medal-slot"></div>
         <div id="end-status">Perfect!</div>
         <div id="accuracy-stats">Accuracy: 100%</div>
-        
         <button class="btn-restart" onclick="location.reload()">PLAY AGAIN</button>
     </div>
 </div>
 
 <script>
+    // JS Months are 0-indexed: 0 = Jan, 1 = Feb, etc.
     const cardsData = [
-        { id: 1, date: new Date(1440, 0, 1), text: "Gutenberg invents the printing press", img: "https://picsum.photos/id/357/150/150" },
-        { id: 2, date: new Date(1550, 0, 1), text: "Potatoes brought to Europe", img: "https://picsum.photos/id/1080/150/150" },
-        { id: 3, date: new Date(1770, 0, 1), text: "French potato fashion (Marie Antoinette)", img: "https://picsum.photos/id/1083/150/150" },
-        { id: 4, date: new Date(1879, 0, 1), text: "Edison's practical light bulb", img: "https://picsum.photos/id/166/150/150" },
-        { id: 5, date: new Date(1949, 0, 1), text: "McDonald's adds fries to the menu", img: "https://picsum.photos/id/1084/150/150" },
-        { id: 6, date: new Date(1960, 0, 1), text: "Mashed Potato dance craze", img: "https://picsum.photos/id/1042/150/150" },
-        { id: 7, date: new Date(1969, 6, 20), text: "Apollo 11 Moon landing", img: "https://picsum.photos/id/1049/150/150" },
-        
-        /* Commented out for simplicity 
-        { id: 8, date: new Date(1969, 9, 29), text: "ARPANET (early internet) created", img: "https://picsum.photos/id/972/150/150" },
-        { id: 9, date: new Date(1976, 3, 1), text: "Apple Inc. founded", img: "https://picsum.photos/id/145/150/150" },
-        { id: 10, date: new Date(1989, 10, 9), text: "Fall of the Berlin Wall", img: "https://picsum.photos/id/141/150/150" },
-        { id: 11, date: new Date(2007, 0, 9), text: "First iPhone released", img: "https://picsum.photos/id/345/150/150" },
-        { id: 12, date: new Date(2018, 0, 1), text: "Raisin potato salad viral on SNL", img: "https://picsum.photos/id/1063/150/150" }
-        */
+        { id: 1, date: new Date(1440, 0, 1), text: "Gutenberg invents the printing press", img: "img1.jpg" },
+        { id: 2, date: new Date(1550, 4, 12), text: "Potatoes brought to Europe", img: "img2.jpg" },
+        { id: 3, date: new Date(1770, 7, 10), text: "French potato fashion (Marie Antoinette)", img: "img3.jpg" },
+        { id: 4, date: new Date(1879, 9, 21), text: "Edison's practical light bulb", img: "img4.jpg" },
+        { id: 5, date: new Date(1949, 0, 1), text: "McDonald's adds fries to the menu", img: "img5.jpg" },
+        { id: 6, date: new Date(1960, 2, 1), text: "Mashed Potato dance craze", img: "img6.jpg" },
+        { id: 7, date: new Date(1969, 6, 20), text: "Apollo 11 Moon landing", img: "img7.jpg" }
     ];
 
     let unplaced = [];
@@ -313,6 +297,10 @@
     window.addEventListener('resize', setAppHeight);
     setAppHeight();
 
+    function formatDate(date) {
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
     function init() {
         unplaced = [...cardsData].sort(() => Math.random() - 0.5);
         totalRounds = unplaced.length - 1; 
@@ -320,7 +308,6 @@
         const seedEl = createCardEl(seed);
         seedEl.classList.add('correct');
         placed.push({ data: seed, el: seedEl });
-        
         renderTimeline(false);
         nextCard();
     }
@@ -332,18 +319,14 @@
             ind.className = 'card-drop-indicator';
             ind.dataset.index = i;
             timeline.appendChild(ind);
-
             const slot = document.createElement('div');
             slot.className = 'card-slot';
             slot.appendChild(item.el);
-            
             if (animate && item.isNew) {
                 slot.style.height = '0px';
-                requestAnimationFrame(() => slot.style.height = '115px');
+                requestAnimationFrame(() => slot.style.height = '125px');
                 item.isNew = false;
-            } else {
-                slot.style.height = '115px';
-            }
+            } else { slot.style.height = '125px'; }
             timeline.appendChild(slot);
         });
         const lastInd = document.createElement('div');
@@ -377,21 +360,15 @@
         const touch = e.touches[0];
         trayCard.style.left = (touch.clientX - initialX) + 'px';
         trayCard.style.top = (touch.clientY - initialY) + 'px';
-
         const wrapperRect = wrapper.getBoundingClientRect();
         if (touch.clientY < wrapperRect.top + 70) wrapper.scrollTop -= 12;
         if (touch.clientY > wrapperRect.bottom - 70) wrapper.scrollTop += 12;
-
-        let closestInd = -1;
-        let minDist = Infinity;
+        let closestInd = -1; let minDist = Infinity;
         document.querySelectorAll('.card-drop-indicator').forEach(ind => {
             const rect = ind.getBoundingClientRect();
             const d = Math.abs(touch.clientY - (rect.top + rect.height / 2));
             ind.classList.remove('show');
-            if (d < minDist && d < 80) {
-                minDist = d;
-                closestInd = parseInt(ind.dataset.index);
-            }
+            if (d < minDist && d < 80) { minDist = d; closestInd = parseInt(ind.dataset.index); }
         });
         currentDragIndex = closestInd;
         if (closestInd !== -1) document.querySelector(`.card-drop-indicator[data-index="${closestInd}"]`).classList.add('show');
@@ -411,24 +388,20 @@
         const data = cardsData.find(c => c.id == trayCard.dataset.id);
         const cardEl = createCardEl(data);
         trayCard.style.visibility = 'hidden';
-
         const temp = [...placed];
         temp.splice(index, 0, { data });
         const correct = (index === 0 || temp[index-1].data.date <= data.date) && 
                         (index === temp.length - 1 || data.date <= temp[index+1].data.date);
-
         if (correct) {
             cardEl.classList.add('correct');
             placed.splice(index, 0, { data, el: cardEl, isNew: true });
             renderTimeline(true);
             setTimeout(nextCard, 800);
         } else {
-            mistakes++;
-            cardEl.classList.add('incorrect');
+            mistakes++; cardEl.classList.add('incorrect');
             const indicators = document.querySelectorAll('.card-drop-indicator');
             const dummySlot = document.createElement('div');
-            dummySlot.className = 'card-slot';
-            dummySlot.style.height = '115px';
+            dummySlot.className = 'card-slot'; dummySlot.style.height = '125px';
             dummySlot.appendChild(cardEl);
             timeline.insertBefore(dummySlot, indicators[index]);
             await new Promise(r => setTimeout(r, 1200));
@@ -438,19 +411,14 @@
             renderTimeline(false);
             const lastRect = cardEl.getBoundingClientRect();
             const deltaY = firstRect.top - lastRect.top;
-            let startTime = null;
-            const duration = 1800;
+            let startTime = null; const duration = 1800;
             function step(timestamp) {
                 if (!startTime) startTime = timestamp;
                 const progress = (timestamp - startTime) / duration;
-                if (progress < 1) {
-                    cardEl.scrollIntoView({ block: 'center' });
-                    requestAnimationFrame(step);
-                }
+                if (progress < 1) { cardEl.scrollIntoView({ block: 'center' }); requestAnimationFrame(step); }
             }
             cardEl.classList.add('elevated');
-            cardEl.style.transition = 'none';
-            cardEl.style.transform = `translateY(${deltaY}px)`;
+            cardEl.style.transition = 'none'; cardEl.style.transform = `translateY(${deltaY}px)`;
             cardEl.offsetHeight; 
             cardEl.style.transition = 'transform 1.8s cubic-bezier(0.45, 0, 0.55, 1)';
             cardEl.style.transform = 'translateY(0)';
@@ -467,7 +435,7 @@
         div.innerHTML = `
             <img src="${data.img}" class="card-img">
             <div class="card-content">
-                <span class="date-badge">${data.date.getFullYear()}</span>
+                <span class="date-badge">${formatDate(data.date)}</span>
                 <p class="card-text">${data.text}</p>
             </div>
         `;
@@ -479,44 +447,23 @@
         const slot = document.getElementById('medal-slot');
         const statusText = document.getElementById('end-status');
         const stats = document.getElementById('accuracy-stats');
-        
-        let medalClass = 'gold-body';
-        let ribbonClass = '';
-        let number = '1';
-        let status = 'Perfect!';
-
-        if (mistakes <= 1) {
-            medalClass = 'gold-body';
-            number = '1';
-            status = 'Perfect!';
-        } else if (mistakes <= 3) {
-            medalClass = 'silver-body';
-            ribbonClass = 'ribbon-silver';
-            number = '2';
-            status = 'Great Job!';
-        } else if (mistakes <= 5) {
-            medalClass = 'bronze-body';
-            ribbonClass = 'ribbon-silver';
-            number = '3';
-            status = 'Nice!';
-        } else {
-            // Star logic
+        let medalClass = 'gold-body'; let ribbonClass = ''; let number = '1'; let status = 'Perfect!';
+        if (mistakes <= 1) { medalClass = 'gold-body'; number = '1'; status = 'Perfect!'; }
+        else if (mistakes <= 3) { medalClass = 'silver-body'; ribbonClass = 'ribbon-silver'; number = '2'; status = 'Great Job!'; }
+        else if (mistakes <= 5) { medalClass = 'bronze-body'; ribbonClass = 'ribbon-silver'; number = '3'; status = 'Nice!'; }
+        else {
             slot.innerHTML = `<div class="star-shape">4</div>`;
             statusText.textContent = "Keep Going!";
             stats.textContent = `Mistakes: ${mistakes}`;
-            modal.style.display = 'flex';
-            return;
+            modal.style.display = 'flex'; return;
         }
-
         slot.innerHTML = `
             <div class="ribbon ${ribbonClass}"></div>
             <div class="medal-body ${medalClass}">
-                <div class="laurel"></div>
-                <div class="laurel laurel-right"></div>
+                <div class="laurel"></div><div class="laurel laurel-right"></div>
                 <div class="medal-number">${number}</div>
             </div>
         `;
-
         statusText.textContent = status;
         const accuracy = Math.round(((totalRounds - mistakes) / totalRounds) * 100);
         stats.textContent = `Accuracy: ${Math.max(0, accuracy)}%`;
