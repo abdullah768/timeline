@@ -2,754 +2,804 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Timeline Puzzle for My Love!</title>
-    <!-- No favicon to avoid Chrome warnings and match original app -->
-    <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>My Wife's Timeline Game</title>
     <style>
+        /* General Styles */
         :root {
-            --yellow-bg: #FFD700; /* A vibrant yellow */
-            --card-bg-light: #FFFFFF;
-            --card-shadow: rgba(0, 0, 0, 0.1); /* Subtle shadow for placed cards */
-            --card-holder-shadow: rgba(0, 0, 0, 0.2); /* Stronger shadow for card in holder */
-            --text-color: #333;
-            --header-text-color: #000;
-            --timeline-line-color: #ccc;
-            --insertion-point-color: #007bff; /* Blue for active insertion point */
-            --correct-color: #28a745; /* Green for correct */
-            --incorrect-color: #dc3545; /* Red for incorrect */
-            --modal-bg: rgba(0, 0, 0, 0.6);
-            --modal-content-bg: #fff;
+            --primary-bg: #ffe45e; /* Yellow background */
+            --card-purple: #c3a1e6;
+            --card-yellow: #f8e178;
+            --card-green: #90d8a5;
+            --card-pink: #f4a5b4;
+            --card-white: #ffffff;
+            --text-dark: #333333;
+            --shadow-light: rgba(0, 0, 0, 0.1);
+            --shadow-medium: rgba(0, 0, 0, 0.2);
+            --border-radius-card: 15px;
+            --border-radius-sm: 8px;
+            --font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
         }
 
-        /* Base styles for iPhone 16 Pro Max */
-        html, body {
+        body {
             margin: 0;
             padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden; /* Prevent scrolling on the main body */
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-            color: var(--text-color);
-            background-color: var(--yellow-bg);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .app-container {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-            height: 100%;
-            box-sizing: border-box;
-            /* Safe area insets for iPhone notch/dynamic island */
-            padding-top: env(safe-area-inset-top, 20px);
-            padding-bottom: env(safe-area-inset-bottom, 20px);
-        }
-
-        /* Header Styles */
-        .app-header {
-            background-color: var(--yellow-bg);
-            padding: 1.5vh 4vw; /* Matches original app padding */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1.5vh; /* Space between top bar and banner */
-            position: relative;
-            overflow: hidden;
-        }
-
-        .header-top-bar {
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 2vw; /* Inner padding for icons */
-            z-index: 1;
-        }
-
-        .book-icon-container {
-            background-color: #FFC0CB; /* Pink */
-            border-radius: 50%;
-            width: 8vh;
-            height: 8vh;
+            font-family: var(--font-family);
+            background-color: var(--primary-bg);
             display: flex;
             justify-content: center;
             align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            min-height: 100vh;
+            overflow: hidden; /* Prevent body scroll */
+            user-select: none; /* Disable text selection */
+            -webkit-user-select: none; /* For iOS */
+            touch-action: pan-y; /* Allow vertical scrolling if necessary, but try to keep to game interactions */
         }
 
-        .book-icon-container i {
-            color: #fff;
-            font-size: 4vh;
-        }
-
-        .stars-container {
-            display: flex;
-            gap: 1vw;
-            font-size: 3vh;
-            color: #fff;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
-        }
-
-        .play-puzzle-banner {
-            background-color: var(--card-bg-light);
-            border-radius: 2.5vh;
-            padding: 2.5vh 6vw; /* Matches original app banner size */
-            box-shadow: 0 4px 10px var(--card-shadow);
-            font-size: 3.2vh; /* Matches original app banner font size */
-            font-weight: 600;
-            color: var(--header-text-color);
-            text-align: center;
-            width: 80%;
-            max-width: 400px;
-            box-sizing: border-box;
-            z-index: 1;
-        }
-
-        /* Game Area */
-        .game-area {
-            flex-grow: 1;
+        #game-container {
+            background-color: #f7f7f7; /* Lighter background for the app frame */
+            width: 100vw;
+            height: 100vh;
+            max-width: 430px; /* iPhone 16 Pro Max width approximation */
+            max-height: 932px; /* iPhone 16 Pro Max height approximation */
+            border-radius: 40px; /* App frame rounded corners */
+            box-shadow: 0 10px 30px var(--shadow-medium);
             display: flex;
             flex-direction: column;
-            background-color: #F8F8F8; /* Light grey background for the game area */
-            border-top-left-radius: 4vh;
-            border-top-right-radius: 4vh;
-            overflow: hidden;
+            overflow: hidden; /* Keep content within rounded frame */
             position: relative;
         }
 
-        /* Timeline Wrapper */
-        .timeline-wrapper {
+        /* Top Bar */
+        #top-bar {
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            color: var(--text-dark);
+            font-size: 1.2rem;
+            font-weight: bold;
+            box-shadow: 0 2px 5px var(--shadow-light);
+            z-index: 10;
+        }
+
+        #top-bar .arrow-back {
+            font-size: 1.8rem;
+            margin-right: 15px;
+            cursor: pointer;
+        }
+
+        /* Timeline Play Area */
+        #timeline-wrapper {
             flex-grow: 1;
-            position: relative;
-            padding: 2vh 0;
-            overflow-y: auto;
+            padding: 20px 10px;
+            overflow-y: auto; /* Scrollable timeline */
             -webkit-overflow-scrolling: touch;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
         }
 
-        .timeline-line {
+        #timeline-label {
             position: absolute;
-            left: 10vw; /* Position of the vertical line */
-            top: 0;
-            bottom: 0;
-            width: 2px; /* Matches original app thickness */
-            background-color: var(--timeline-line-color);
+            left: 20px;
+            top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        #timeline-label::before {
+            content: '';
+            width: 2px;
+            height: calc(100% - 20px); /* Adjust height as needed */
+            background-color: #ccc;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            top: 25px;
             z-index: 0;
         }
 
-        .timeline-label {
-            position: absolute;
-            left: 10vw;
-            transform-origin: 0 0; /* Rotate around its top-left corner */
-            transform: translateX(-50%) rotate(-90deg); /* Rotate text */
-            font-size: 1.8vh;
-            font-weight: 500;
-            color: #888;
-            background-color: #F8F8F8; /* Match game-area background */
-            padding: 0 1vw;
-            z-index: 1;
-            white-space: nowrap; /* Prevent text wrapping */
+        #timeline-label span {
+            writing-mode: vertical-lr;
+            text-orientation: mixed;
+            transform: rotate(180deg);
+            margin-bottom: 5px;
         }
 
-        .before-label {
-            top: 10vh; /* Adjusted position after rotation */
-            left: calc(10vw - 1.5vh); /* Fine-tune position */
-        }
-
-        .after-label {
-            bottom: 10vh; /* Adjusted position after rotation */
-            left: calc(10vw - 1.5vh); /* Fine-tune position */
-        }
-
-        .timeline-cards-container {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            padding-left: calc(10vw + 20px); /* Offset for the timeline line + some margin */
-            padding-right: 4vw;
-            gap: 2vh; /* Space between cards */
-            min-height: 100%;
-            box-sizing: border-box;
-        }
-
-        /* Card Styles */
-        .card {
-            background-color: var(--card-bg-light);
-            border-radius: 2vh;
-            box-shadow: 0 4px 8px var(--card-shadow);
-            display: flex;
-            align-items: center;
-            padding: 1.5vh 2vw;
-            width: 100%;
-            max-width: 80vw;
-            box-sizing: border-box;
-            position: relative;
-            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-            margin-left: 0;
-        }
-
-        .card.incorrect {
-            animation: shake 0.5s;
-            border: 2px solid var(--incorrect-color);
-        }
-
-        @keyframes shake {
-            0% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            50% { transform: translateX(5px); }
-            75% { transform: translateX(-5px); }
-            100% { transform: translateX(0); }
-        }
-
-        .card-image {
-            width: 10vh; /* Matches original image size */
-            height: 10vh;
-            border-radius: 1.5vh; /* Matches original border-radius */
-            object-fit: cover;
-            margin-right: 3vw;
-            flex-shrink: 0;
-        }
-
-        .card-content {
+        #timeline {
             flex-grow: 1;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            gap: 0.5vh;
-        }
-
-        .card-date-box { /* Renamed for clarity, matches original app's date styling */
-            background-color: rgba(0, 0, 0, 0.08); /* Light grey background for box */
-            border-radius: 0.8vh; /* Slightly less rounded for box look */
-            padding: 0.5vh 1.5vw;
-            font-size: 1.8vh; /* Matches original font size for date */
-            font-weight: 600;
-            color: #555;
-            align-self: flex-start; /* Align box to left */
-            margin-bottom: 0.5vh;
-        }
-
-        .card-text {
-            font-size: 2.2vh; /* Matches original text size */
-            line-height: 1.3;
-            color: var(--text-color);
-        }
-
-        .card-status-icon {
-            position: absolute;
-            top: 1.5vh;
-            right: 2vw;
-            font-size: 2.5vh;
-            color: #ccc; /* Default grey for outline */
-        }
-
-        .card-status-icon.correct {
-            color: var(--correct-color); /* Green for correct */
-        }
-
-        .card-status-icon.incorrect {
-            color: var(--incorrect-color); /* Red for incorrect */
-        }
-
-        /* Insertion Point Styles */
-        .insertion-point {
+            align-items: center;
+            gap: 15px; /* Spacing between cards */
             width: 100%;
-            height: 2vh; /* Subtle height for insertion area */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: grab; /* Indicate draggable target */
-            position: relative;
-            z-index: 2;
-            transition: background-color 0.2s ease-in-out;
-        }
-
-        .insertion-point::before {
-            content: '';
-            position: absolute;
-            left: 10vw; /* Align with timeline line */
-            transform: translateX(-50%);
-            width: 1.5vh; /* Dot size */
-            height: 1.5vh; /* Dot size */
-            background-color: var(--timeline-line-color); /* Grey dot by default */
-            border-radius: 50%;
-            opacity: 0.7;
-            transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
-        }
-
-        .insertion-point.drag-over::before { /* Visual feedback for drag-over */
-            background-color: var(--insertion-point-color); /* Blue dot on drag-over */
-            transform: translateX(-50%) scale(1.2); /* Slightly larger */
-        }
-
-        /* Card Holder */
-        .card-holder-container {
-            background-color: var(--card-bg-light);
-            padding: 3vh 4vw;
-            box-shadow: 0 -4px 10px var(--card-shadow);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 18vh;
-            box-sizing: border-box;
-            z-index: 10;
+            max-width: 350px; /* Limit width of cards for better readability */
+            padding-left: 50px; /* Make space for 'Before' label */
+            padding-bottom: 20px;
             position: relative;
         }
 
-        .card-holder-container .card {
-            width: 90%;
-            max-width: 90vw;
-            box-shadow: 0 8px 20px var(--card-holder-shadow); /* More prominent shadow */
+        #timeline.drag-over-active .card-placeholder {
+            opacity: 0.3;
+            height: 120px; /* Placeholder height, match card */
+            margin: 10px 0;
+        }
+
+        .timeline-card {
+            background-color: var(--card-white);
+            border-radius: var(--border-radius-card);
+            box-shadow: 0 5px 15px var(--shadow-light);
+            display: flex;
+            align-items: center;
+            width: 100%;
             cursor: grab;
-            transform: rotate(-2deg); /* Slight rotation */
+            transition: transform 0.3s ease-in-out, box-shadow 0.2s ease-in-out, opacity 0.3s ease-in-out, background-color 0.3s ease-in-out;
+            position: relative;
+            z-index: 5;
+            min-height: 100px; /* Ensure consistent height */
         }
 
-        .card-holder-container .card.dragging {
-            opacity: 0.7; /* Visual feedback when dragging */
-            transform: rotate(-2deg) scale(0.95); /* Slightly shrink when dragging */
+        .timeline-card.correct {
+            border: 2px solid var(--card-green);
         }
 
-        .remaining-cards-count {
-            position: absolute;
-            left: 4vw;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 2.5vh;
-            font-weight: 600;
-            color: #888;
-            display: flex;
-            align-items: center;
-            gap: 0.5vw;
-        }
-        .remaining-cards-count i {
-            font-size: 2vh;
+        .timeline-card.incorrect {
+            border: 2px solid var(--card-pink);
         }
 
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 100;
-            left: 0;
-            top: 0;
+        .timeline-card .card-image-container {
+            width: 80px;
+            height: 80px;
+            border-radius: var(--border-radius-sm);
+            overflow: hidden;
+            margin: 10px;
+            flex-shrink: 0;
+            background-color: #eee; /* Placeholder for image loading */
+        }
+
+        .timeline-card .card-image-container img {
             width: 100%;
             height: 100%;
-            overflow: auto;
-            background-color: var(--modal-bg);
+            object-fit: cover;
+            display: block;
+        }
+
+        .timeline-card .card-content {
+            flex-grow: 1;
+            padding: 10px 10px 10px 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .timeline-card .card-date {
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: var(--text-dark);
+            margin-bottom: 5px;
+            padding: 5px 10px;
+            border-radius: var(--border-radius-sm);
+            align-self: flex-start; /* Align date bubble to top-left of content */
+        }
+
+        .timeline-card .card-text {
+            font-size: 0.95rem;
+            color: #555;
+            line-height: 1.3;
+        }
+
+        .timeline-card .feedback-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 1.5rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            color: white; /* Default color, will be overridden by classes */
+            background-color: transparent;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1; /* For better icon centering */
+        }
+
+        .timeline-card .feedback-icon.show {
+            opacity: 1;
+        }
+
+        .timeline-card .feedback-icon.correct-icon {
+            background-color: var(--card-green);
+        }
+
+        .timeline-card .feedback-icon.incorrect-icon {
+            background-color: var(--card-pink);
+        }
+
+        /* Card Holder Area */
+        #card-holder-area {
+            background-color: var(--card-white);
+            padding: 15px 20px;
+            box-shadow: 0 -5px 20px var(--shadow-light);
+            z-index: 20;
             display: flex;
             justify-content: center;
             align-items: center;
+            min-height: 140px; /* Ensure consistent height */
+            position: relative;
         }
 
-        .modal-content {
-            background-color: var(--modal-content-bg);
-            margin: auto;
-            padding: 6vh 8vw;
-            border-radius: 3vh;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-            text-align: center;
-            width: 80%;
-            max-width: 400px;
-            box-sizing: border-box;
+        #current-card {
+            width: 90%;
+            max-width: 320px; /* Similar to timeline card width */
+            background-color: var(--card-white);
+            border-radius: var(--border-radius-card);
+            box-shadow: 0 5px 15px var(--shadow-medium);
+            display: flex;
+            align-items: center;
+            cursor: grab;
+            position: relative;
+            z-index: 10;
+            min-height: 100px;
+        }
+
+        #current-card.dragging {
+            opacity: 0.7;
+            transform: scale(1.05);
+        }
+
+        #current-card .card-image-container {
+            width: 80px;
+            height: 80px;
+            border-radius: var(--border-radius-sm);
+            overflow: hidden;
+            margin: 10px;
+            flex-shrink: 0;
+            background-color: #eee;
+        }
+
+        #current-card .card-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        #current-card .card-content {
+            flex-grow: 1;
+            padding: 10px 10px 10px 0;
             display: flex;
             flex-direction: column;
-            gap: 2.5vh;
+            justify-content: center;
         }
 
-        .modal-content h2 {
-            font-size: 4vh;
-            color: var(--header-text-color);
-            margin-bottom: 1vh;
+        #current-card .card-date {
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #888; /* Hidden date is lighter */
+            margin-bottom: 5px;
+            padding: 5px 10px;
+            border-radius: var(--border-radius-sm);
+            background-color: #f0f0f0;
+            align-self: flex-start;
         }
 
-        .modal-content p {
-            font-size: 2.5vh;
-            line-height: 1.4;
-            color: var(--text-color);
-            margin-bottom: 2vh;
+        #current-card .card-text {
+            font-size: 0.95rem;
+            color: var(--text-dark);
+            line-height: 1.3;
         }
 
-        #result-medal {
-            font-size: 8vh;
-            margin-bottom: 2vh;
+        /* Drag over indicator */
+        .card-drop-indicator {
+            height: 5px;
+            background-color: #8bb4e1; /* Blue indicator */
+            width: 80%;
+            border-radius: 5px;
+            margin: 0 auto; /* Center the indicator */
+            transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
+            opacity: 0;
+            z-index: 1; /* Below cards */
         }
 
-        #result-medal .gold { color: gold; }
-        #result-medal .silver { color: silver; }
-        #result-medal .bronze { color: #cd7f32; }
-        #result-medal .star { color: #FFD700; }
+        .timeline-card.drag-over-target {
+            box-shadow: 0 0 0 3px #8bb4e1;
+            transform: scale(1.02);
+        }
 
+        /* Modal for Game End */
+        #game-end-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            flex-direction: column;
+            padding: 20px;
+            text-align: center;
+        }
 
-        #play-again-button {
-            background-color: var(--insertion-point-color);
-            color: white;
-            padding: 2.5vh 5vw;
+        #game-end-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        #game-end-modal h2 {
+            font-size: 2.2rem;
+            color: var(--text-dark);
+            margin-bottom: 15px;
+        }
+
+        #game-end-modal .trophy-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            animation: bounceIn 0.8s ease-out forwards;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.1); opacity: 1; }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); }
+        }
+
+        #game-end-modal p {
+            font-size: 1.2rem;
+            color: #555;
+            margin-bottom: 25px;
+        }
+
+        #game-end-modal button {
+            background-color: var(--primary-bg);
             border: none;
-            border-radius: 2vh;
-            font-size: 2.8vh;
-            font-weight: 600;
+            padding: 12px 25px;
+            border-radius: var(--border-radius-sm);
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--text-dark);
             cursor: pointer;
-            transition: background-color 0.2s ease-in-out;
+            box-shadow: 0 5px 15px var(--shadow-light);
+            transition: background-color 0.2s ease, transform 0.1s ease;
         }
 
-        #play-again-button:hover {
-            background-color: #0056b3;
+        #game-end-modal button:active {
+            transform: scale(0.98);
         }
 
-        /* Specific card background colors */
-        .card[data-color="#D8BFD8"] { background-color: #D8BFD8; } /* Thistle */
-        .card[data-color="#FFFF99"] { background-color: #FFFF99; } /* Light Yellow */
-        .card[data-color="#90EE90"] { background-color: #90EE90; } /* Light Green */
-        .card[data-color="#FFB6C1"] { background-color: #FFB6C1; } /* Light Pink */
-        .card[data-color="#FFFFFF"] { background-color: #FFFFFF; } /* White */
-        .card[data-color="#ADD8E6"] { background-color: #ADD8E6; } /* Light Blue */
-        .card[data-color="#FFD700"] { background-color: #FFD700; } /* Gold */
-        .card[data-color="#FFC0CB"] { background-color: #FFC0CB; } /* Pink */
+        /* Helper classes */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Font Awesome for icons */
+        @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css");
     </style>
 </head>
 <body>
-<div class="app-container">
-    <header class="app-header">
-        <div class="header-top-bar">
-            <div class="book-icon-container">
-                <i class="fas fa-book"></i>
-            </div>
-            <div class="stars-container">
-                <i class="fas fa-star"></i>
-                <i class="far fa-circle"></i>
-            </div>
-        </div>
-        <div class="play-puzzle-banner">
-            Play new puzzles daily
-        </div>
-    </header>
 
-    <main class="game-area">
-        <div class="timeline-wrapper">
-            <div class="timeline-line">
-                <span class="timeline-label before-label">Before</span>
-                <span class="timeline-label after-label">After</span>
+    <div id="game-container">
+        <div id="top-bar">
+            <span class="arrow-back"><i class="fas fa-arrow-left"></i></span>
+            Timeline Challenge
+        </div>
+
+        <div id="timeline-wrapper">
+            <div id="timeline-label">
+                <span>Before</span>
+                <span style="margin-top: auto; margin-bottom: 0;">After</span>
             </div>
-            <div id="timeline-cards-container" class="timeline-cards-container">
-                <!-- Placed cards and insertion points will be rendered here by JavaScript -->
+            <div id="timeline">
+                <!-- Placed cards will go here -->
+                <div class="card-drop-indicator top-indicator" data-index="0" style="opacity: 1;"></div>
             </div>
         </div>
 
-        <div id="card-holder-container" class="card-holder-container">
-            <div class="remaining-cards-count">
-                <i class="fas fa-clone"></i> <span id="unplaced-count"></span>
+        <div id="card-holder-area">
+            <div id="current-card" draggable="true">
+                <div class="card-image-container">
+                    <img src="" alt="Event Image">
+                </div>
+                <div class="card-content">
+                    <div class="card-date">?</div>
+                    <div class="card-text">Drag this card to the timeline!</div>
+                </div>
             </div>
-            <!-- Current card to be placed will be rendered here by JavaScript -->
         </div>
-    </main>
 
-    <div id="result-modal" class="modal">
-        <div class="modal-content">
-            <h2 id="result-title"></h2>
-            <p id="result-message"></p>
-            <div id="result-medal"></div>
-            <button id="play-again-button">Play Again</button>
+        <div id="game-end-modal">
+            <h2>Game Over!</h2>
+            <div class="trophy-icon"></div>
+            <p id="score-message"></p>
+            <button onclick="restartGame()">Play Again</button>
         </div>
     </div>
-</div>
 
-<script>
-    const allEvents = [
-        // You can easily modify these cards!
-        // 'date' uses new Date(year, monthIndex, day)
-        // monthIndex is 0-indexed (0 for Jan, 11 for Dec)
-        // IMPORTANT: Replace these image URLs with your own direct links!
-        // Using picsum.photos for reliable placeholders.
-        { id: 'e1', image: 'https://picsum.photos/id/237/100/100', text: 'Potatoes brought to Europe', date: new Date(1550, 6, 1), color: '#D8BFD8' }, // Mid-1500s (July 1, 1550)
-        { id: 'e2', image: 'https://picsum.photos/id/238/100/100', text: 'French potato fashion', date: new Date(1770, 0, 1), color: '#FFFF99' }, // ~1770s (Jan 1, 1770)
-        { id: 'e6', image: 'https://picsum.photos/id/239/100/100', text: 'Irish Potato Famine begins', date: new Date(1845, 8, 1), color: '#ADD8E6' }, // 1845 (Sept 1, 1845)
-        { id: 'e7', image: 'https://picsum.photos/id/240/100/100', text: 'First potato chips invented', date: new Date(1853, 7, 24), color: '#FFD700' }, // 1853 (Aug 24, 1853)
-        { id: 'e5', image: 'https://picsum.photos/id/241/100/100', text: "McDonald's adds fries to the menu", date: new Date(1949, 11, 15), color: '#FFFFFF' }, // 1949 (Dec 15, 1949 - first fries on menu)
-        { id: 'e8', image: 'https://picsum.photos/id/242/100/100', text: 'Mr. Potato Head toy released', date: new Date(1952, 4, 1), color: '#FFC0CB' }, // 1952 (May 1, 1952)
-        { id: 'e3', image: 'https://picsum.photos/id/243/100/100', text: 'Mashed Potato dance craze', date: new Date(1960, 0, 1), color: '#90EE90' }, // 1960 (Jan 1, 1960)
-        { id: 'e4', image: 'https://picsum.photos/id/244/100/100', text: 'Raisin potato salad on SNL', date: new Date(2018, 9, 27), color: '#FFB6C1' }, // 2018 (Oct 27, 2018 - SNL skit date)
-    ];
+    <script>
+        const cardsData = [
+            // --- Easily modify card data here ---
+            // Format: { id: uniqueId, image: 'URL_TO_IMAGE', text: 'Event Description', date: new Date('YYYY-MM-DD') }
+            // Use placeholder images for now, replace with your Google Photos links
+            { id: 'potatoes', image: 'https://via.placeholder.com/150/C3A1E6/FFFFFF?text=Potatoes', text: 'Potatoes brought to Europe', date: new Date('1550-01-01') },
+            { id: 'french-fashion', image: 'https://via.placeholder.com/150/F8E178/FFFFFF?text=French+Fashion', text: 'French potato fashion', date: new Date('1770-01-01') },
+            { id: 'mashed-potato-dance', image: 'https://via.placeholder.com/150/90D8A5/FFFFFF?text=Mashed+Potato', text: 'Mashed Potato dance craze', date: new Date('1960-01-01') },
+            { id: 'snl-salad', image: 'https://via.placeholder.com/150/F4A5B4/FFFFFF?text=SNL+Salad', text: 'Raisin potato salad on SNL', date: new Date('2018-01-01') },
+            { id: 'mcdonalds-fries', image: 'https://via.placeholder.com/150/FFD700/FFFFFF?text=McDonalds+Fries', text: "McDonald's adds fries to the menu", date: new Date('1949-01-01') },
+            // Add more cards here:
+            // { id: 'new-event-1', image: 'YOUR_IMAGE_URL_1', text: 'Description of event 1', date: new Date('YEAR-MONTH-DAY') },
+            // { id: 'new-event-2', image: 'YOUR_IMAGE_URL_2', text: 'Description of event 2', date: new Date('YEAR-MONTH-DAY') },
+        ];
+        // --- End of card data modification area ---
 
-    // --- Game State Variables ---
-    let correctOrder = []; // All events sorted by date
-    let timelineCards = []; // Cards currently placed on the timeline
-    let unplacedCards = []; // Cards waiting to be placed (shuffled)
-    let currentCard = null; // The card currently in the holder
-    let wrongAnswersCount = 0;
-    let isGameActive = false;
+        const gameContainer = document.getElementById('game-container');
+        const timeline = document.getElementById('timeline');
+        const cardHolderArea = document.getElementById('card-holder-area');
+        const currentCardElement = document.getElementById('current-card');
+        const gameEndModal = document.getElementById('game-end-modal');
+        const scoreMessage = document.getElementById('score-message');
+        const trophyIcon = gameEndModal.querySelector('.trophy-icon');
 
-    // --- DOM Elements ---
-    const timelineCardsContainer = document.getElementById('timeline-cards-container');
-    const cardHolderContainer = document.getElementById('card-holder-container');
-    const resultModal = document.getElementById('result-modal');
-    const resultTitle = document.getElementById('result-title');
-    const resultMessage = document.getElementById('result-message');
-    const resultMedal = document.getElementById('result-medal');
-    const playAgainButton = document.getElementById('play-again-button');
-    const unplacedCountSpan = document.getElementById('unplaced-count');
+        let unplacedCards = [];
+        let placedCards = []; // Stores objects: { cardData: {...}, element: DOM_ELEMENT, isCorrect: boolean, isFixed: boolean }
+        let currentCard = null;
+        let currentCardIndex = 0;
+        let wrongAnswers = 0;
+        let dragTargetIndex = -1; // The index in placedCards array where the current card would be inserted
 
-    // --- Helper Functions ---
-
-    // Shuffles an array (Fisher-Yates algorithm)
-    function shuffleArray(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-        return array;
-    }
-
-    // Formats a Date object into a readable string (e.g., "Jan 1, 1960")
-    function formatDate(date) {
-        const options = { year: 'numeric', month: 'short', day: 'numeric' };
-        return date.toLocaleDateString('en-US', options);
-    }
-
-    // Creates a card DOM element
-    function createCardElement(cardData, isCurrentCardInHolder = false) {
-        const cardDiv = document.createElement('div');
-        cardDiv.className = 'card';
-        cardDiv.setAttribute('data-id', cardData.id);
-        cardDiv.setAttribute('data-color', cardData.color); // Set data-color for CSS styling
-
-        if (isCurrentCardInHolder) {
-            cardDiv.setAttribute('draggable', 'true'); // Make the card in holder draggable
-            cardDiv.addEventListener('dragstart', handleDragStart);
+        // Helper to format date for display
+        function formatDate(date) {
+            return date.toLocaleString('en-US', { year: 'numeric', month: 'short' });
         }
 
-        const cardImage = document.createElement('img');
-        cardImage.className = 'card-image';
-        cardImage.src = cardData.image;
-        cardImage.alt = cardData.text;
+        // Shuffles an array (Fisher-Yates algorithm)
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
 
-        const cardContent = document.createElement('div');
-        cardContent.className = 'card-content';
+        function initializeGame() {
+            // Reset state
+            unplacedCards = [...cardsData];
+            shuffleArray(unplacedCards); // Shuffle the cards to be placed
+            placedCards = [];
+            currentCardIndex = 0;
+            wrongAnswers = 0;
+            dragTargetIndex = -1;
 
-        const cardDateBox = document.createElement('span'); // Element for date box
-        cardDateBox.className = 'card-date-box';
-        cardDateBox.textContent = formatDate(cardData.date);
+            timeline.innerHTML = '<div class="card-drop-indicator top-indicator" data-index="0" style="opacity: 1;"></div>'; // Clear timeline, add initial indicator
+            gameEndModal.classList.remove('show');
 
-        const cardText = document.createElement('div');
-        cardText.className = 'card-text';
-        cardText.textContent = cardData.text;
+            loadNextCard();
+        }
 
-        cardContent.appendChild(cardDateBox);
-        cardContent.appendChild(cardText);
-        cardDiv.appendChild(cardImage);
-        cardDiv.appendChild(cardContent);
+        function createCardElement(cardData, isDraggable = false) {
+            const cardEl = document.createElement('div');
+            cardEl.classList.add('timeline-card');
+            if (isDraggable) {
+                cardEl.classList.add('current-card-draggable'); // This class is for the active draggable card
+                cardEl.setAttribute('draggable', 'true');
+            }
+            cardEl.dataset.id = cardData.id;
 
-        // Add status icon only if it's a placed card (not in the holder)
-        if (!isCurrentCardInHolder && cardData.isCorrectlyPlaced !== undefined) {
-            const statusIcon = document.createElement('i');
-            statusIcon.className = 'card-status-icon fas';
-            if (cardData.isCorrectlyPlaced) {
-                statusIcon.classList.add('fa-check-circle', 'correct'); // Outlined tick
+            cardEl.innerHTML = `
+                <div class="card-image-container">
+                    <img src="${cardData.image}" alt="${cardData.text}">
+                </div>
+                <div class="card-content">
+                    <div class="card-date hidden-date" style="background-color: ${getCardColor(cardData.id)}; color: var(--text-dark);">?</div>
+                    <div class="card-text">${cardData.text}</div>
+                </div>
+                <div class="feedback-icon correct-icon"><i class="fas fa-check"></i></div>
+                <div class="feedback-icon incorrect-icon"><i class="fas fa-times"></i></div>
+            `;
+            return cardEl;
+        }
+
+        // Assign colors based on initial mock-up for consistency
+        function getCardColor(id) {
+            switch (id) {
+                case 'potatoes': return var_color('--card-purple');
+                case 'french-fashion': return var_color('--card-yellow');
+                case 'mashed-potato-dance': return var_color('--card-green');
+                case 'snl-salad': return var_color('--card-pink');
+                case 'mcdonalds-fries': return 'lightcoral'; // A new color if needed
+                default: return '#cccccc'; // Default for new cards
+            }
+        }
+
+        function var_color(varName) {
+            return getComputedStyle(document.documentElement).getPropertyValue(varName);
+        }
+
+        function loadNextCard() {
+            if (unplacedCards.length === 0) {
+                endGame();
+                return;
+            }
+
+            currentCard = unplacedCards.shift(); // Get the next card
+            currentCardElement.dataset.id = currentCard.id;
+            currentCardElement.querySelector('img').src = currentCard.image;
+            currentCardElement.querySelector('.card-text').textContent = currentCard.text;
+            currentCardElement.querySelector('.card-date').textContent = '?';
+            currentCardElement.querySelector('.card-date').style.backgroundColor = getCardColor(currentCard.id);
+            currentCardElement.classList.remove('hidden'); // Ensure card is visible
+        }
+
+        function handleDragStart(e) {
+            e.dataTransfer.setData('text/plain', currentCard.id);
+            e.dataTransfer.effectAllowed = 'move';
+            currentCardElement.classList.add('dragging');
+
+            // Hide all drop indicators initially
+            document.querySelectorAll('.card-drop-indicator').forEach(indicator => {
+                indicator.style.opacity = '0';
+            });
+        }
+
+        function handleDragEnd(e) {
+            currentCardElement.classList.remove('dragging');
+            // Hide all drop indicators after drag ends
+            document.querySelectorAll('.card-drop-indicator').forEach(indicator => {
+                indicator.style.opacity = '0';
+            });
+            dragTargetIndex = -1; // Reset target index
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault(); // Necessary to allow dropping
+            e.dataTransfer.dropEffect = 'move';
+
+            const target = e.target.closest('.timeline-card, .card-drop-indicator');
+            if (!target) {
+                dragTargetIndex = -1;
+                hideAllDropIndicators();
+                return;
+            }
+
+            hideAllDropIndicators(); // Hide all before showing new one
+
+            let newTargetIndex = -1;
+            if (target.classList.contains('timeline-card')) {
+                const rect = target.getBoundingClientRect();
+                const midPoint = rect.top + rect.height / 2;
+                const targetCardId = target.dataset.id;
+                const targetCardPlacedIndex = placedCards.findIndex(pc => pc.cardData.id === targetCardId);
+
+                if (e.clientY < midPoint) {
+                    // Dropping above the card
+                    newTargetIndex = targetCardPlacedIndex;
+                } else {
+                    // Dropping below the card
+                    newTargetIndex = targetCardPlacedIndex + 1;
+                }
+            } else if (target.classList.contains('card-drop-indicator')) {
+                newTargetIndex = parseInt(target.dataset.index);
+            }
+
+            if (newTargetIndex !== -1) {
+                const indicator = timeline.querySelector(`.card-drop-indicator[data-index="${newTargetIndex}"]`);
+                if (indicator) {
+                    indicator.style.opacity = '1';
+                }
+                dragTargetIndex = newTargetIndex;
             } else {
-                statusIcon.classList.add('fa-times-circle', 'incorrect');
+                dragTargetIndex = -1;
             }
-            cardDiv.appendChild(statusIcon);
         }
 
-        return cardDiv;
-    }
-
-    // Creates an insertion point DOM element
-    function createInsertionPoint(index) {
-        const insertionPoint = document.createElement('div');
-        insertionPoint.className = 'insertion-point';
-        insertionPoint.setAttribute('data-index', index); // Store index for drop target
-        insertionPoint.addEventListener('dragover', handleDragOver);
-        insertionPoint.addEventListener('dragleave', handleDragLeave);
-        insertionPoint.addEventListener('drop', handleDrop);
-        return insertionPoint;
-    }
-
-    // --- Drag and Drop Handlers ---
-    function handleDragStart(event) {
-        if (!isGameActive || !currentCard) {
-            event.preventDefault();
-            return;
-        }
-        event.dataTransfer.setData('text/plain', currentCard.id); // Pass the ID of the card being dragged
-        event.currentTarget.classList.add('dragging'); // Add visual feedback for the dragged card
-    }
-
-    function handleDragOver(event) {
-        event.preventDefault(); // Necessary to allow dropping
-        if (isGameActive && currentCard) {
-            event.currentTarget.classList.add('drag-over'); // Visual feedback for drop target
-        }
-    }
-
-    function handleDragLeave(event) {
-        event.currentTarget.classList.remove('drag-over');
-    }
-
-    function handleDrop(event) {
-        event.preventDefault();
-        event.currentTarget.classList.remove('drag-over'); // Remove visual feedback
-
-        if (!isGameActive || !currentCard) return; // Ensure there's a card to drop
-
-        const insertionIndex = parseInt(event.currentTarget.getAttribute('data-index'));
-        handleCardPlacement(insertionIndex);
-
-        // Remove dragging class from the card holder
-        const draggingCardElement = cardHolderContainer.querySelector('.card.dragging');
-        if (draggingCardElement) {
-            draggingCardElement.classList.remove('dragging');
-        }
-    }
-
-    // --- Game Logic Functions ---
-
-    function initializeGame() {
-        // Reset game state
-        wrongAnswersCount = 0;
-        timelineCards = [];
-        unplacedCards = [];
-        currentCard = null;
-        isGameActive = true;
-        resultModal.style.display = 'none'; // Hide modal
-
-        // 1. Sort all events to get the correct chronological order
-        correctOrder = [...allEvents].sort((a, b) => a.date - b.date);
-
-        // 2. Place the first card on the timeline as a starting point
-        const firstCard = { ...correctOrder[0], isCorrectlyPlaced: true };
-        timelineCards.push(firstCard);
-
-        // 3. The rest of the cards are for the user to place, shuffled
-        const remainingCards = correctOrder.slice(1);
-        unplacedCards = shuffleArray(remainingCards.map(card => ({ ...card }))); // Deep copy to avoid modifying original
-
-        // 4. Set the first card to be placed
-        currentCard = unplacedCards.shift();
-
-        renderGame();
-    }
-
-    function renderGame() {
-        renderTimeline();
-        renderCardHolder();
-        checkGameEnd();
-    }
-
-    function renderTimeline() {
-        timelineCardsContainer.innerHTML = ''; // Clear existing cards and insertion points
-
-        // Add an insertion point at the very beginning
-        if (isGameActive && currentCard) {
-            timelineCardsContainer.appendChild(createInsertionPoint(0));
+        function hideAllDropIndicators() {
+            document.querySelectorAll('.card-drop-indicator').forEach(indicator => {
+                indicator.style.opacity = '0';
+            });
         }
 
-        timelineCards.forEach((card, index) => {
-            timelineCardsContainer.appendChild(createCardElement(card));
-            // Add an insertion point after each card
-            if (isGameActive && currentCard) {
-                timelineCardsContainer.appendChild(createInsertionPoint(index + 1));
+        function handleDrop(e) {
+            e.preventDefault();
+            hideAllDropIndicators();
+
+            if (dragTargetIndex === -1) {
+                // Not dropped on a valid target, do nothing
+                return;
             }
+
+            placeCard(currentCard, dragTargetIndex);
+            dragTargetIndex = -1; // Reset target index
+        }
+
+        function placeCard(cardData, insertionIndex) {
+            const newPlacedCard = {
+                cardData: cardData,
+                element: createCardElement(cardData),
+                isCorrect: false,
+                isFixed: false
+            };
+
+            // Remove the card from the card holder
+            currentCardElement.classList.add('hidden');
+
+            // Insert into the DOM immediately
+            insertCardElementIntoTimeline(newPlacedCard.element, insertionIndex);
+
+            // Temporarily insert into placedCards array to check relative order
+            const tempPlacedCards = [...placedCards];
+            tempPlacedCards.splice(insertionIndex, 0, newPlacedCard);
+
+            // Check correctness of *all* cards
+            let allCorrect = true;
+            for (let i = 0; i < tempPlacedCards.length; i++) {
+                const card = tempPlacedCards[i];
+                let cardCorrect = true;
+
+                // Check previous card
+                if (i > 0 && tempPlacedCards[i-1].cardData.date.getTime() > card.cardData.date.getTime()) {
+                    cardCorrect = false;
+                }
+                // Check next card
+                if (i < tempPlacedCards.length - 1 && tempPlacedCards[i+1].cardData.date.getTime() < card.cardData.date.getTime()) {
+                    cardCorrect = false;
+                }
+                card.isCorrect = cardCorrect;
+                if (!cardCorrect) allCorrect = false;
+            }
+
+            if (newPlacedCard.isCorrect) {
+                // If the new card's placement is correct relative to its immediate neighbors
+                newPlacedCard.element.classList.add('correct');
+                newPlacedCard.element.querySelector('.feedback-icon.correct-icon').classList.add('show');
+                newPlacedCard.isFixed = true; // Fix correct cards
+            } else {
+                newPlacedCard.element.classList.add('incorrect');
+                newPlacedCard.element.querySelector('.feedback-icon.incorrect-icon').classList.add('show');
+                wrongAnswers++;
+            }
+
+            // Reveal date for the newly placed card
+            newPlacedCard.element.querySelector('.card-date').textContent = formatDate(cardData.date);
+
+            // Update the main placedCards array
+            placedCards = tempPlacedCards;
+
+            // If any card is incorrect, resort and re-render the timeline
+            if (!allCorrect) {
+                // Find the truly sorted position
+                const correctSortedIndex = [...placedCards].sort((a,b) => a.cardData.date.getTime() - b.cardData.date.getTime())
+                                            .findIndex(pc => pc.cardData.id === newPlacedCard.cardData.id);
+
+                // Move the actual DOM element to its correct place if it was initially wrong
+                if (insertionIndex !== correctSortedIndex) {
+                    // Remove current element, then re-insert it at the correct index
+                    newPlacedCard.element.remove();
+                    insertCardElementIntoTimeline(newPlacedCard.element, correctSortedIndex);
+
+                    // Update placedCards array to reflect the correct sorted position
+                    const currentItemIndex = placedCards.indexOf(newPlacedCard);
+                    if (currentItemIndex > -1) {
+                        placedCards.splice(currentItemIndex, 1);
+                    }
+                    placedCards.splice(correctSortedIndex, 0, newPlacedCard);
+                }
+
+                // Re-evaluate correctness for all cards after auto-correction
+                // (Though for this specific game, the feedback is given on *initial* drop, then it corrects)
+                // We'll keep the 'incorrect' class if the initial drop was wrong, but the card is now in the right place.
+            }
+
+            // After placement, always re-render drop indicators
+            renderDropIndicators();
+
+            // Load next card after a short delay for visual feedback
+            setTimeout(loadNextCard, 1000);
+        }
+
+        function insertCardElementIntoTimeline(cardElement, index) {
+            const dropIndicators = timeline.querySelectorAll('.card-drop-indicator');
+            if (index >= dropIndicators.length) {
+                timeline.appendChild(cardElement);
+            } else {
+                timeline.insertBefore(cardElement, dropIndicators[index]);
+            }
+        }
+
+        function renderDropIndicators() {
+            // Remove existing indicators
+            document.querySelectorAll('.card-drop-indicator').forEach(indicator => indicator.remove());
+
+            // Add new indicators based on current placedCards length
+            for (let i = 0; i <= placedCards.length; i++) {
+                const indicator = document.createElement('div');
+                indicator.classList.add('card-drop-indicator');
+                indicator.dataset.index = i;
+                timeline.insertBefore(indicator, (i < placedCards.length ? placedCards[i].element : null));
+            }
+            // Ensure the first indicator is always visible to hint where to drop first card
+            if (placedCards.length === 0) {
+                 timeline.querySelector('.card-drop-indicator[data-index="0"]').style.opacity = '1';
+            }
+        }
+
+
+        function endGame() {
+            let resultText = '';
+            let trophyClass = '';
+
+            if (wrongAnswers === 0) {
+                resultText = "Amazing! You got a Gold Star! Your knowledge of history is impeccable!";
+                trophyClass = 'fas fa-medal gold'; // Assuming gold icon in FA
+                trophyIcon.style.color = 'gold';
+            } else if (wrongAnswers <= 1) {
+                resultText = "Excellent! You earned a Silver Star! Just one slip-up, well done!";
+                trophyClass = 'fas fa-medal silver';
+                trophyIcon.style.color = 'silver';
+            } else if (wrongAnswers <= 2) {
+                resultText = "Good Job! You got a Bronze Star! A few corrections, but you persevered!";
+                trophyClass = 'fas fa-medal bronze';
+                trophyIcon.style.color = '#cd7f32'; /* Bronze color */
+            } else {
+                resultText = `You completed the timeline with ${wrongAnswers} wrong answers. Keep practicing!`;
+                trophyClass = 'fas fa-star';
+                trophyIcon.style.color = '#888';
+            }
+
+            scoreMessage.textContent = resultText;
+            trophyIcon.className = `trophy-icon ${trophyClass}`;
+            gameEndModal.classList.add('show');
+        }
+
+        function restartGame() {
+            initializeGame();
+        }
+
+        // --- Event Listeners ---
+        currentCardElement.addEventListener('dragstart', handleDragStart);
+        currentCardElement.addEventListener('dragend', handleDragEnd);
+
+        timeline.addEventListener('dragover', handleDragOver);
+        timeline.addEventListener('dragleave', () => {
+             hideAllDropIndicators();
+             dragTargetIndex = -1;
         });
+        timeline.addEventListener('drop', handleDrop);
 
-        // Scroll to the bottom of the timeline to show the latest cards/insertion points
-        timelineCardsContainer.scrollTop = timelineCardsContainer.scrollHeight;
-    }
+        // Initial setup
+        initializeGame();
+        renderDropIndicators(); // Render initial indicators even before first card is placed
 
-    function renderCardHolder() {
-        cardHolderContainer.querySelector('.card')?.remove(); // Remove old card if exists
-        if (currentCard) {
-            cardHolderContainer.appendChild(createCardElement(currentCard, true));
-        }
-        unplacedCountSpan.textContent = unplacedCards.length; // Update remaining count
-    }
-
-    function handleCardPlacement(insertionIndex) {
-        const cardToPlace = currentCard; // This is the card that was dragged
-        let actualInsertionIndex = insertionIndex; // This is where the user *tried* to place it
-
-        // Determine the correct chronological position for the cardToPlace
-        let correctPositionIndex = 0;
-        while (correctPositionIndex < timelineCards.length &&
-               cardToPlace.date > timelineCards[correctPositionIndex].date) {
-            correctPositionIndex++;
-        }
-
-        // Check if the user placed it correctly
-        if (actualInsertionIndex === correctPositionIndex) {
-            cardToPlace.isCorrectlyPlaced = true;
-        } else {
-            cardToPlace.isCorrectlyPlaced = false;
-            wrongAnswersCount++;
-            // If incorrect, we'll visually place it at the correct position
-            actualInsertionIndex = correctPositionIndex;
-        }
-
-        // Insert the card into the timelineCards array
-        timelineCards.splice(actualInsertionIndex, 0, cardToPlace);
-
-        // Update currentCard to the next unplaced card
-        currentCard = unplacedCards.shift() || null;
-
-        // Re-render the game
-        renderGame();
-
-        // If the card was placed incorrectly, add a temporary class for animation
-        if (!cardToPlace.isCorrectlyPlaced) {
-            const placedCardElement = timelineCardsContainer.querySelector(`[data-id="${cardToPlace.id}"]`);
-            if (placedCardElement) {
-                placedCardElement.classList.add('incorrect');
-                setTimeout(() => {
-                    placedCardElement.classList.remove('incorrect');
-                }, 500); // Match animation duration
+        // Prevent default touch behavior for potential drag issues
+        document.addEventListener('touchstart', function(event) {
+            if (event.target.closest('#current-card')) {
+                // For the draggable card, prevent default to allow custom drag handling if needed,
+                // but native HTML5 drag/drop usually works on modern mobile browsers.
+                // However, if issues arise, a custom touch-drag implementation might be necessary.
+            } else if (event.target.closest('#timeline')) {
+                // Allow vertical scrolling in the timeline if needed
+                return true;
             }
-        }
-    }
+            // event.preventDefault(); // Uncomment if you want to disable all default touch scroll/zoom
+        }, { passive: false });
 
-    function checkGameEnd() {
-        if (!currentCard && unplacedCards.length === 0) {
-            isGameActive = false;
-            displayResults();
-        }
-    }
+        document.addEventListener('touchmove', function(event) {
+            // This is primarily for custom drag, if native HTML5 drag fails on mobile.
+            // For now, relying on native.
+        }, { passive: false });
 
-    function displayResults() {
-        resultModal.style.display = 'flex'; // Show modal
-
-        let title = '';
-        let message = '';
-        let medalClass = '';
-
-        if (wrongAnswersCount === 0) {
-            title = 'Perfect Score!';
-            message = 'You got all the events in the correct order! Amazing!';
-            medalClass = 'gold fas fa-medal';
-        } else if (wrongAnswersCount === 1) {
-            title = 'Great Job!';
-            message = `You made only ${wrongAnswersCount} mistake. Almost perfect!`;
-            medalClass = 'silver fas fa-medal';
-        } else if (wrongAnswersCount === 2) {
-            title = 'Good Effort!';
-            message = `You made ${wrongAnswersCount} mistakes. Keep practicing!`;
-            medalClass = 'bronze fas fa-medal';
-        } else {
-            title = 'Nice Try!';
-            message = `You made ${wrongAnswersCount} mistakes. You'll get it next time!`;
-            medalClass = 'star fas fa-star';
-        }
-
-        resultTitle.textContent = title;
-        resultMessage.textContent = message;
-        resultMedal.className = ''; // Clear previous classes
-        resultMedal.classList.add(...medalClass.split(' ')); // Add new classes
-    }
-
-    // --- Event Listeners ---
-    playAgainButton.addEventListener('click', initializeGame);
-
-    // --- Initialize the game when the page loads ---
-    document.addEventListener('DOMContentLoaded', initializeGame);
-</script>
+    </script>
 </body>
 </html>
